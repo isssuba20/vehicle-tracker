@@ -34,6 +34,30 @@ Mock data (3 vehicles, service history, fuel history) seeds automatically on
 first launch (`src/data/seed.ts`) so every screen is testable immediately —
 no manual data entry required to explore the app.
 
+## Building an installable app (EAS)
+
+For a real `.apk`/`.ipa` outside Expo Go — e.g. to hand to household members
+who'll use the app day-to-day:
+
+```bash
+npm install -g eas-cli
+eas login
+eas init                # links this project to your Expo account, one-time
+eas build --platform android --profile preview   # or ios
+```
+
+`eas.json` defines three profiles:
+- `development` — dev client build, only needed if you outgrow Expo Go
+  (custom native modules)
+- `preview` — internal-distribution `.apk`, the one to use for testing on
+  your own device
+- `production` — store-ready build (auto-increments version, no `buildType`
+  override so it produces an `.aab` for Play Store submission)
+
+`eas build` runs in Expo's cloud and gives you a QR code / download link for
+the finished binary — no local Android Studio or Xcode needed for Android;
+iOS still needs an Apple Developer account on file with EAS.
+
 ## Project structure
 
 ```
