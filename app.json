@@ -2,7 +2,14 @@
   "expo": {
     "name": "Vehicle Tracker",
     "slug": "vehicle-tracker",
+    "owner": "isssuba",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/18b5fd07-ab23-47e8-898a-ff673e4fda35"
+    },
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "scheme": "vehicletracker",
@@ -19,6 +26,11 @@
       "package": "com.vehicletracker.app",
       "adaptiveIcon": {
         "backgroundColor": "#F3EFE7"
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "18b5fd07-ab23-47e8-898a-ff673e4fda35"
       }
     }
   }

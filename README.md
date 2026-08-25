@@ -58,6 +58,27 @@ eas build --platform android --profile preview   # or ios
 the finished binary — no local Android Studio or Xcode needed for Android;
 iOS still needs an Apple Developer account on file with EAS.
 
+## Shipping changes without rebuilding (EAS Update)
+
+Once the app is installed as a standalone `.apk`, most changes — screens,
+styles, logic, anything that's plain JS/TS — can be pushed over the air
+instead of rebuilding:
+
+```bash
+eas update --channel preview --message "Describe what changed"
+```
+
+The installed app checks for an update on launch and applies it on the next
+restart. This only works for JS-only changes; anything that touches native
+code (a new library with native modules, an Expo SDK bump) still needs a
+full `eas build` + reinstall, because the update has to match the binary's
+`runtimeVersion` (pinned to `appVersion` in `app.json` — bump `"version"`
+there if you ever do need to break compatibility on purpose).
+
+Match the `--channel` to how the app was built: a `preview`-profile build
+only picks up updates published to the `preview` channel (see the
+`channel` field on each profile in `eas.json`).
+
 ## Project structure
 
 ```
