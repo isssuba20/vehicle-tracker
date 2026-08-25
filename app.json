@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Vehicle Tracker",
+    "slug": "vehicle-tracker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "vehicletracker",
+    "backgroundColor": "#F3EFE7",
+    "splash": {
+      "backgroundColor": "#F3EFE7"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.vehicletracker.app"
+    },
+    "android": {
+      "package": "com.vehicletracker.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#F3EFE7"
+      }
+    }
+  }
+}
