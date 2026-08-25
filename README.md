@@ -79,6 +79,28 @@ Match the `--channel` to how the app was built: a `preview`-profile build
 only picks up updates published to the `preview` channel (see the
 `channel` field on each profile in `eas.json`).
 
+### Publishing from Termux (or anywhere without a working Hermes host build)
+
+`eas update` bundles and compiles JS locally before uploading, using
+Hermes's `hermesc` binary — which has no build that runs on Android/Termux
+as the host machine. Running `eas update` directly from Termux fails with
+`Unsupported host platform for Hermes compiler: android`, regardless of
+which platform you're targeting.
+
+`.github/workflows/eas-update.yml` works around this: pushing to `main` or
+`claude/multi-vehicle-maintenance-tracker-9qihjx` runs `eas update` on
+GitHub's Linux runners instead, publishing to `production` or `preview`
+respectively. One-time setup:
+
+1. Generate a token at https://expo.dev/accounts/isssuba/settings/access-tokens
+2. Add it as a repository secret: **Settings → Secrets and variables →
+   Actions → New repository secret**, name `EXPO_TOKEN`.
+
+After that, `git push` from Termux is enough — the Action publishes the
+update. To publish to a specific channel on demand instead of waiting for a
+push, use the **Actions** tab → **EAS Update** → **Run workflow**, which
+lets you type a channel name.
+
 ## Project structure
 
 ```
