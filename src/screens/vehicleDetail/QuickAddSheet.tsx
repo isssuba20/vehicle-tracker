@@ -10,6 +10,7 @@ import {
   Platform,
   Alert,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import uuid from "react-native-uuid";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
@@ -50,6 +51,7 @@ export function QuickAddSheet({
   } = useAppStore();
   const colors = useThemeStore((s) => s.colors);
   const currencyCode = useCurrencyStore((s) => s.code);
+  const insets = useSafeAreaInsets();
   const styles = makeStyles(colors);
   const isEdit = !!entry;
 
@@ -211,7 +213,7 @@ export function QuickAddSheet({
         style={styles.backdrop}
       >
         <Pressable style={styles.backdropTouchable} onPress={close} />
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, { paddingBottom: spacing.lg + insets.bottom }]}>
           <View style={styles.handle} />
           <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             <Text style={styles.title}>{title}</Text>

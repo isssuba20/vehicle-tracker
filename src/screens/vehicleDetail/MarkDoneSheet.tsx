@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Modal, View, Text, Pressable, ScrollView, Animated, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
@@ -40,6 +41,7 @@ export function MarkDoneSheet({
 }) {
   const updateVehicle = useAppStore((s) => s.updateVehicle);
   const colors = useThemeStore((s) => s.colors);
+  const insets = useSafeAreaInsets();
   const styles = makeStyles(colors);
   const meta = KIND_META[kind];
 
@@ -90,7 +92,7 @@ export function MarkDoneSheet({
         style={styles.backdrop}
       >
         <Pressable style={styles.backdropTouchable} onPress={onClose} />
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, { paddingBottom: spacing.lg + insets.bottom }]}>
           <View style={styles.handle} />
 
           {completed ? (

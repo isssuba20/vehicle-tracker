@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, ScrollView, Pressable, StyleSheet, Alert, KeyboardAvoidingView, Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import uuid from "react-native-uuid";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/navigation/types";
@@ -28,6 +29,7 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
   const { vehicles, groupIds, addVehicle, updateVehicle, deleteVehicle } = useAppStore();
   const colors = useThemeStore((s) => s.colors);
   const currencyCode = useCurrencyStore((s) => s.code);
+  const insets = useSafeAreaInsets();
   const styles = makeStyles(colors);
   const existing = vehicles.find((v) => v.id === vehicleId);
   const isEdit = !!existing;
@@ -147,7 +149,7 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
     >
     <ScrollView
       style={styles.container}
-      contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.xl * 2 }}
+      contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.xl * 2 + insets.bottom }}
       keyboardShouldPersistTaps="handled"
     >
       <Text style={styles.title}>{isEdit ? "Edit vehicle" : "Add a vehicle"}</Text>

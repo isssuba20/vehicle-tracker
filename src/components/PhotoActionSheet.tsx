@@ -1,5 +1,6 @@
 import React from "react";
 import { Modal, View, Text, Pressable, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
@@ -26,13 +27,14 @@ export function PhotoActionSheet({
   onClose: () => void;
 }) {
   const colors = useThemeStore((s) => s.colors);
+  const insets = useSafeAreaInsets();
   const styles = makeStyles(colors);
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <Pressable style={styles.backdropTouchable} onPress={onClose} />
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, { paddingBottom: spacing.lg + insets.bottom }]}>
           <View style={styles.handle} />
           <Text style={styles.title}>Vehicle photo</Text>
 
