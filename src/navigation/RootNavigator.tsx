@@ -7,12 +7,15 @@ import { DashboardScreen } from "@/screens/DashboardScreen";
 import { SettingsScreen } from "@/screens/SettingsScreen";
 import { VehicleDetailScreen } from "@/screens/VehicleDetailScreen";
 import { AddEditVehicleScreen } from "@/screens/AddEditVehicleScreen";
-import { colors, fonts } from "@/theme/theme";
+import { fonts } from "@/theme/theme";
+import { useThemeStore } from "@/theme/useThemeStore";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tabs = createBottomTabNavigator<TabParamList>();
 
 function TabsNavigator() {
+  const colors = useThemeStore((s) => s.colors);
+
   return (
     <Tabs.Navigator
       screenOptions={{
@@ -46,6 +49,8 @@ function TabsNavigator() {
 }
 
 export function RootNavigator() {
+  const colors = useThemeStore((s) => s.colors);
+
   return (
     <Stack.Navigator
       screenOptions={{

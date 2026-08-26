@@ -2,8 +2,15 @@ import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, Pressable, StyleSheet, Alert } from "react-native";
 import * as Updates from "expo-updates";
 import { useAppStore } from "@/state/store";
-import { colors, fonts, radii, spacing } from "@/theme/theme";
+import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
+import { useThemeStore } from "@/theme/useThemeStore";
 import { TextField } from "@/components/TextField";
+import { ThemeToggle } from "@/components/ThemeToggle";
+
+// The code box always sits on a solid `colors.ok` fill (locked, same
+// in both themes), so its text needs a fixed bright color rather than
+// colors.textPrimary, which flips to near-black in light mode.
+const ON_OK_TEXT = "#F3EFE7";
 
 function buildInfoLabel(): string {
   if (!Updates.isEnabled) return "Dev build (no OTA updates)";
@@ -15,6 +22,8 @@ function buildInfoLabel(): string {
 
 export function SettingsScreen() {
   const { groupIds, members, loadMembers, inviteMember, currentUserId } = useAppStore();
+  const colors = useThemeStore((s) => s.colors);
+  const styles = makeStyles(colors);
   const groupId = groupIds[0];
   const [inviteName, setInviteName] = useState("");
   const [lastCode, setLastCode] = useState<string | null>(null);
@@ -36,7 +45,10 @@ export function SettingsScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Settings</Text>
+      <View style={styles.titleRow}>
+        <Text style={styles.title}>Settings</Text>
+        <ThemeToggle colors={colors} />
+      </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Household access</Text>
@@ -86,100 +98,106 @@ export function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.lg,
-  },
-  title: {
-    fontFamily: fonts.display,
-    fontSize: 28,
-    color: colors.textPrimary,
-    marginBottom: spacing.md,
-  },
-  section: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-  },
-  sectionTitle: {
-    fontFamily: fonts.display,
-    fontSize: 16,
-    color: colors.textPrimary,
-    marginBottom: 4,
-  },
-  sectionBody: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textMuted,
-    marginBottom: spacing.sm,
-  },
-  memberRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: spacing.sm,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
-  },
-  memberName: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 14,
-    color: colors.textPrimary,
-  },
-  roleBadge: {
-    backgroundColor: colors.background,
-    borderRadius: radii.pill,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-  },
-  roleText: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.textMuted,
-    textTransform: "capitalize",
-  },
-  inviteButton: {
-    backgroundColor: colors.accent,
-    borderRadius: radii.md,
-    paddingVertical: spacing.sm + 2,
-    alignItems: "center",
-  },
-  inviteButtonText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    color: colors.onAccent,
-  },
-  codeBox: {
-    marginTop: spacing.md,
-    padding: spacing.md,
-    backgroundColor: colors.ok,
-    borderRadius: radii.md,
-    alignItems: "center",
-  },
-  codeLabel: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.textPrimary,
-  },
-  code: {
-    fontFamily: fonts.mono,
-    fontSize: 24,
-    letterSpacing: 4,
-    color: colors.textPrimary,
-    marginTop: 4,
-  },
-  buildInfo: {
-    fontFamily: fonts.mono,
-    fontSize: 11,
-    color: colors.textFaint,
-    textAlign: "center",
-    marginTop: spacing.sm,
-    marginBottom: spacing.lg,
-  },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      paddingHorizontal: spacing.md,
+      paddingTop: spacing.lg,
+    },
+    titleRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: spacing.md,
+    },
+    title: {
+      fontFamily: fonts.display,
+      fontSize: 28,
+      color: colors.textPrimary,
+    },
+    section: {
+      backgroundColor: colors.surface,
+      borderRadius: radii.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      padding: spacing.md,
+      marginBottom: spacing.md,
+    },
+    sectionTitle: {
+      fontFamily: fonts.display,
+      fontSize: 16,
+      color: colors.textPrimary,
+      marginBottom: 4,
+    },
+    sectionBody: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textMuted,
+      marginBottom: spacing.sm,
+    },
+    memberRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: spacing.sm,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
+    },
+    memberName: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 14,
+      color: colors.textPrimary,
+    },
+    roleBadge: {
+      backgroundColor: colors.background,
+      borderRadius: radii.pill,
+      paddingHorizontal: 10,
+      paddingVertical: 3,
+    },
+    roleText: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.textMuted,
+      textTransform: "capitalize",
+    },
+    inviteButton: {
+      backgroundColor: colors.accent,
+      borderRadius: radii.md,
+      paddingVertical: spacing.sm + 2,
+      alignItems: "center",
+    },
+    inviteButtonText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 14,
+      color: colors.onAccent,
+    },
+    codeBox: {
+      marginTop: spacing.md,
+      padding: spacing.md,
+      backgroundColor: colors.ok,
+      borderRadius: radii.md,
+      alignItems: "center",
+    },
+    codeLabel: {
+      fontFamily: fonts.body,
+      fontSize: 12,
+      color: ON_OK_TEXT,
+    },
+    code: {
+      fontFamily: fonts.mono,
+      fontSize: 24,
+      letterSpacing: 4,
+      color: ON_OK_TEXT,
+      marginTop: 4,
+    },
+    buildInfo: {
+      fontFamily: fonts.mono,
+      fontSize: 11,
+      color: colors.textFaint,
+      textAlign: "center",
+      marginTop: spacing.sm,
+      marginBottom: spacing.lg,
+    },
+  });

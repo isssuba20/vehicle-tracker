@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useVehicle } from "./VehicleContext";
 import { useAppStore } from "@/state/store";
-import { colors, fonts, radii, spacing } from "@/theme/theme";
+import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
+import { useThemeStore } from "@/theme/useThemeStore";
 import { formatDate, formatKm, formatPeso } from "@/utils/format";
 import { QuickAddSheet } from "./QuickAddSheet";
 
@@ -10,6 +12,9 @@ export function ServiceTab() {
   const vehicle = useVehicle();
   const { serviceByVehicle, loadVehicleDetail } = useAppStore();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const insets = useSafeAreaInsets();
+  const colors = useThemeStore((s) => s.colors);
+  const styles = makeStyles(colors);
 
   useEffect(() => {
     loadVehicleDetail(vehicle.id);
@@ -45,7 +50,10 @@ export function ServiceTab() {
           </View>
         )}
       />
-      <Pressable style={styles.addButton} onPress={() => setSheetOpen(true)}>
+      <Pressable
+        style={[styles.addButton, { bottom: spacing.md + insets.bottom }]}
+        onPress={() => setSheetOpen(true)}
+      >
         <Text style={styles.addButtonText}>+ Log a service</Text>
       </Pressable>
       <QuickAddSheet kind="service" visible={sheetOpen} onClose={() => setSheetOpen(false)} />
@@ -53,7 +61,8 @@ export function ServiceTab() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -111,7 +120,6 @@ const styles = StyleSheet.create({
   },
   addButton: {
     position: "absolute",
-    bottom: spacing.lg,
     left: spacing.md,
     right: spacing.md,
     backgroundColor: colors.accent,

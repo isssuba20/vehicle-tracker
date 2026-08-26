@@ -4,7 +4,8 @@ import uuid from "react-native-uuid";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/navigation/types";
 import { useAppStore } from "@/state/store";
-import { colors, fonts, radii, spacing } from "@/theme/theme";
+import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
+import { useThemeStore } from "@/theme/useThemeStore";
 import { TextField } from "@/components/TextField";
 import { DateField } from "@/components/DateField";
 import { Vehicle } from "@/types/models";
@@ -16,6 +17,8 @@ const TODAY = new Date().toISOString().slice(0, 10);
 export function AddEditVehicleScreen({ route, navigation }: Props) {
   const { vehicleId } = route.params;
   const { vehicles, groupIds, addVehicle, updateVehicle, deleteVehicle } = useAppStore();
+  const colors = useThemeStore((s) => s.colors);
+  const styles = makeStyles(colors);
   const existing = vehicles.find((v) => v.id === vehicleId);
   const isEdit = !!existing;
 
@@ -143,7 +146,7 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
