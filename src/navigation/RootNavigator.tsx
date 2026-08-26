@@ -7,6 +7,7 @@ import { DashboardScreen } from "@/screens/DashboardScreen";
 import { SettingsScreen } from "@/screens/SettingsScreen";
 import { VehicleDetailScreen } from "@/screens/VehicleDetailScreen";
 import { AddEditVehicleScreen } from "@/screens/AddEditVehicleScreen";
+import { ServiceCentersScreen } from "@/screens/ServiceCentersScreen";
 import { fonts } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 
@@ -70,6 +71,11 @@ export function RootNavigator() {
         name="AddEditVehicle"
         component={AddEditVehicleScreen}
         options={{ title: "", presentation: "modal" }}
+      />
+      <Stack.Screen
+        name="ServiceCenters"
+        component={ServiceCentersScreen}
+        options={{ title: "Service centers" }}
       />
     </Stack.Navigator>
   );

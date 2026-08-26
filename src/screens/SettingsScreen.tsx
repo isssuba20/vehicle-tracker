@@ -10,6 +10,7 @@ import { useThemeStore } from "@/theme/useThemeStore";
 import { CURRENCY_OPTIONS, useCurrencyStore } from "@/state/useCurrencyStore";
 import { TextField } from "@/components/TextField";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { TabScreenProps } from "@/navigation/types";
 
 // The code box always sits on a solid `colors.ok` fill (locked, same
 // in both themes), so its text needs a fixed bright color rather than
@@ -24,7 +25,7 @@ function buildInfoLabel(): string {
   return `Update ${shortId} · published ${when}`;
 }
 
-export function SettingsScreen() {
+export function SettingsScreen({ navigation }: TabScreenProps<"Settings">) {
   const { groupIds, groups, members, loadMembers, inviteMember, updateHouseholdBudget, currentUserId } =
     useAppStore();
   const signOut = useAuthStore((s) => s.signOut);
@@ -168,6 +169,11 @@ export function SettingsScreen() {
         </Pressable>
       </View>
 
+      <Pressable style={styles.linkRow} onPress={() => navigation.navigate("ServiceCenters")}>
+        <Text style={styles.linkRowText}>Service centers</Text>
+        <Text style={styles.linkRowChevron}>›</Text>
+      </Pressable>
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Invite a member</Text>
         <Text style={styles.sectionBody}>
@@ -302,6 +308,28 @@ const makeStyles = (colors: ThemeColors) =>
     currencyChipTextActive: {
       color: colors.onAccent,
       fontFamily: fonts.bodySemiBold,
+    },
+    linkRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      backgroundColor: colors.surface,
+      borderRadius: radii.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.md,
+      marginBottom: spacing.md,
+    },
+    linkRowText: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 14,
+      color: colors.textPrimary,
+    },
+    linkRowChevron: {
+      fontFamily: fonts.body,
+      fontSize: 18,
+      color: colors.textFaint,
     },
     inviteButton: {
       backgroundColor: colors.accent,

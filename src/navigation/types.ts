@@ -6,6 +6,7 @@ export type RootStackParamList = {
   Tabs: undefined;
   VehicleDetail: { vehicleId: string };
   AddEditVehicle: { vehicleId?: string };
+  ServiceCenters: undefined;
 };
 
 export type TabParamList = {
