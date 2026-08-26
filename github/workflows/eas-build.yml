@@ -1,0 +1,47 @@
+name: EAS Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "Build profile"
+        required: true
+        default: "preview"
+        type: choice
+        options:
+          - preview
+          - production
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for EXPO_TOKEN
+        run: |
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "::error::EXPO_TOKEN secret is not set. Add it under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Trigger EAS build
+        env:
+          EAS_SKIP_AUTO_FINGERPRINT: "1"
+        run: eas build --platform android --profile ${{ github.event.inputs.profile }} --non-interactive --no-wait
