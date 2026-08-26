@@ -12,7 +12,7 @@ import { latestKmPerLiter, LatestEfficiency } from "@/utils/fuelEfficiency";
 type Props = TabScreenProps<"Dashboard">;
 
 export function DashboardScreen({ navigation }: Props) {
-  const { ready, vehicles, init, fuelByVehicle, loadVehicleDetail } = useAppStore();
+  const { ready, vehicles, init, fuelByVehicle, loadVehicleDetail, updateVehicle } = useAppStore();
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
   const insets = useSafeAreaInsets();
@@ -44,7 +44,7 @@ export function DashboardScreen({ navigation }: Props) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: spacing.lg + insets.top }]}>
       <View style={styles.titleRow}>
         <Text style={styles.title}>My Vehicles</Text>
         <ThemeToggle colors={colors} />
@@ -66,6 +66,7 @@ export function DashboardScreen({ navigation }: Props) {
             vehicle={item}
             efficiency={kmPerLiterByVehicle[item.id] ?? { kmPerLiter: null, implausible: false }}
             onPress={() => navigation.navigate("VehicleDetail", { vehicleId: item.id })}
+            onPhotoChange={(photoUri) => updateVehicle({ ...item, photoUri })}
           />
         )}
       />
@@ -85,7 +86,6 @@ const makeStyles = (colors: ThemeColors) =>
       flex: 1,
       backgroundColor: colors.background,
       paddingHorizontal: spacing.md,
-      paddingTop: spacing.lg,
     },
     center: {
       flex: 1,

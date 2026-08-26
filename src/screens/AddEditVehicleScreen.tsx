@@ -8,6 +8,7 @@ import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { TextField } from "@/components/TextField";
 import { DateField } from "@/components/DateField";
+import { PhotoPicker } from "@/components/PhotoPicker";
 import { Vehicle } from "@/types/models";
 
 type Props = NativeStackScreenProps<RootStackParamList, "AddEditVehicle">;
@@ -22,6 +23,7 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
   const existing = vehicles.find((v) => v.id === vehicleId);
   const isEdit = !!existing;
 
+  const [photoUri, setPhotoUri] = useState<string | undefined>(existing?.photoUri);
   const [name, setName] = useState(existing?.name ?? "");
   const [make, setMake] = useState(existing?.make ?? "");
   const [model, setModel] = useState(existing?.model ?? "");
@@ -67,6 +69,7 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
       plateNumber: plateNumber.trim(),
       vin: vin.trim(),
       color: color.trim(),
+      photoUri,
       purchaseDate,
       purchasePrice: priceNum,
       currentOdometerKm: odoNum,
@@ -106,11 +109,16 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.xl * 2 }}>
       <Text style={styles.title}>{isEdit ? "Edit vehicle" : "Add a vehicle"}</Text>
+      <Text style={styles.requiredLegend}>
+        <Text style={styles.requiredLegendAsterisk}>*</Text> Required
+      </Text>
 
-      <TextField label="Nickname" placeholder="e.g. The Beast" value={name} onChangeText={setName} />
-      <TextField label="Make" placeholder="Toyota" value={make} onChangeText={setMake} />
-      <TextField label="Model" placeholder="Fortuner" value={model} onChangeText={setModel} />
-      <TextField label="Year" placeholder="2021" keyboardType="number-pad" value={year} onChangeText={setYear} />
+      <PhotoPicker photoUri={photoUri} onChange={setPhotoUri} />
+
+      <TextField label="Nickname" required placeholder="e.g. The Beast" value={name} onChangeText={setName} />
+      <TextField label="Make" required placeholder="Toyota" value={make} onChangeText={setMake} />
+      <TextField label="Model" required placeholder="Fortuner" value={model} onChangeText={setModel} />
+      <TextField label="Year" required placeholder="2021" keyboardType="number-pad" value={year} onChangeText={setYear} />
       <TextField label="Plate number" placeholder="NAB 1234" value={plateNumber} onChangeText={setPlateNumber} autoCapitalize="characters" />
       <TextField label="VIN" placeholder="Vehicle identification number" value={vin} onChangeText={setVin} autoCapitalize="characters" />
       <TextField label="Color" placeholder="Silver" value={color} onChangeText={setColor} />
@@ -155,7 +163,16 @@ const makeStyles = (colors: ThemeColors) => StyleSheet.create({
     fontFamily: fonts.display,
     fontSize: 24,
     color: colors.textPrimary,
+  },
+  requiredLegend: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: spacing.xs,
     marginBottom: spacing.lg,
+  },
+  requiredLegendAsterisk: {
+    color: colors.overdueBright,
   },
   sectionTitle: {
     fontFamily: fonts.display,

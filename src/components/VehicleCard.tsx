@@ -1,24 +1,29 @@
 import React from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, Pressable, Image, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Vehicle } from "@/types/models";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { dateUrgency, pmsUrgency } from "@/utils/urgency";
 import { formatKm, formatKmPerLiter } from "@/utils/format";
 import { LatestEfficiency } from "@/utils/fuelEfficiency";
+import { usePhotoPicker } from "@/utils/usePhotoPicker";
 import { UrgencyDot } from "./UrgencyDot";
 
 export function VehicleCard({
   vehicle,
   efficiency,
   onPress,
+  onPhotoChange,
 }: {
   vehicle: Vehicle;
   efficiency: LatestEfficiency;
   onPress: () => void;
+  onPhotoChange: (uri: string | undefined) => void;
 }) {
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
+  const { openPicker } = usePhotoPicker(vehicle.photoUri, onPhotoChange);
 
   const registration = dateUrgency(vehicle.registrationExpiry);
   const insurance = dateUrgency(vehicle.insuranceExpiry);
@@ -27,6 +32,13 @@ export function VehicleCard({
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
       <View style={styles.header}>
+        <Pressable onPress={openPicker} style={styles.avatar}>
+          {vehicle.photoUri ? (
+            <Image source={{ uri: vehicle.photoUri }} style={styles.avatarImage} />
+          ) : (
+            <Ionicons name="car-sport-outline" size={22} color={colors.textFaint} />
+          )}
+        </Pressable>
         <View style={{ flex: 1 }}>
           <Text style={styles.name}>{vehicle.name}</Text>
           <Text style={styles.subtitle}>
@@ -72,6 +84,22 @@ const makeStyles = (colors: ThemeColors) =>
     header: {
       flexDirection: "row",
       alignItems: "flex-start",
+    },
+    avatar: {
+      width: 48,
+      height: 48,
+      borderRadius: radii.md,
+      backgroundColor: colors.background,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: "center",
+      justifyContent: "center",
+      overflow: "hidden",
+      marginRight: spacing.sm,
+    },
+    avatarImage: {
+      width: "100%",
+      height: "100%",
     },
     name: {
       fontFamily: fonts.display,

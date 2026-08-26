@@ -5,14 +5,18 @@ import { useThemeStore } from "@/theme/useThemeStore";
 
 export function TextField({
   label,
+  required,
   ...inputProps
-}: { label: string } & TextInputProps) {
+}: { label: string; required?: boolean } & TextInputProps) {
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.label}>
+        {label}
+        {required ? <Text style={styles.required}> *</Text> : null}
+      </Text>
       <TextInput
         placeholderTextColor={colors.textFaint}
         style={styles.input}
@@ -32,6 +36,9 @@ const makeStyles = (colors: ThemeColors) =>
       fontSize: 12,
       color: colors.textMuted,
       marginBottom: 4,
+    },
+    required: {
+      color: colors.overdueBright,
     },
     input: {
       borderWidth: 1,

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, Pressable, StyleSheet, Alert } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Updates from "expo-updates";
 import { useAppStore } from "@/state/store";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
@@ -24,6 +25,7 @@ export function SettingsScreen() {
   const { groupIds, members, loadMembers, inviteMember, currentUserId } = useAppStore();
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
+  const insets = useSafeAreaInsets();
   const groupId = groupIds[0];
   const [inviteName, setInviteName] = useState("");
   const [lastCode, setLastCode] = useState<string | null>(null);
@@ -44,7 +46,7 @@ export function SettingsScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: spacing.lg + insets.top }]}>
       <View style={styles.titleRow}>
         <Text style={styles.title}>Settings</Text>
         <ThemeToggle colors={colors} />
@@ -104,7 +106,6 @@ const makeStyles = (colors: ThemeColors) =>
       flex: 1,
       backgroundColor: colors.background,
       paddingHorizontal: spacing.md,
-      paddingTop: spacing.lg,
     },
     titleRow: {
       flexDirection: "row",

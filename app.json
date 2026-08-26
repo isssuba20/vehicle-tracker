@@ -38,6 +38,16 @@
         "barStyle": "light-content"
       }
     },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Garahe uses your photos to set a picture for a vehicle.",
+          "cameraPermission": "Garahe uses your camera to take a picture for a vehicle.",
+          "microphonePermission": false
+        }
+      ]
+    ],
     "extra": {
       "eas": {
         "projectId": "18b5fd07-ab23-47e8-898a-ff673e4fda35"
