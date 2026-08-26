@@ -92,12 +92,22 @@ create table if not exists charging_entries (
   "odometerKm" numeric not null
 );
 
+-- One row per device: the daily-reminders Edge Function (service role,
+-- bypasses RLS) reads every row to fan out push notifications; the app
+-- itself only ever touches its own rows via the policies below.
+create table if not exists push_tokens (
+  token text primary key,
+  "userId" uuid not null references auth.users(id) on delete cascade,
+  "updatedAt" timestamptz not null default now()
+);
+
 create index if not exists idx_vehicles_group on vehicles("groupId");
 create index if not exists idx_service_vehicle on service_entries("vehicleId");
 create index if not exists idx_fuel_vehicle on fuel_entries("vehicleId");
 create index if not exists idx_charging_vehicle on charging_entries("vehicleId");
 create index if not exists idx_group_members_user on group_members("userId");
 create index if not exists idx_invites_code on group_invites(code);
+create index if not exists idx_push_tokens_user on push_tokens("userId");
 
 -- ---------------------------------------------------------------------
 -- Membership helper functions (SECURITY DEFINER so RLS policies can
@@ -139,6 +149,7 @@ alter table vehicles enable row level security;
 alter table service_entries enable row level security;
 alter table fuel_entries enable row level security;
 alter table charging_entries enable row level security;
+alter table push_tokens enable row level security;
 
 -- groups: visible to members; anyone signed in can create one (they
 -- immediately self-insert as owner via group_members below).
@@ -185,3 +196,10 @@ create policy "fuel_entries_all_member" on fuel_entries for all
 create policy "charging_entries_all_member" on charging_entries for all
   using (public.can_access_vehicle("vehicleId"))
   with check (public.can_access_vehicle("vehicleId"));
+
+-- push_tokens: a user manages only their own device tokens. The
+-- daily-reminders Edge Function reads all of them via the service_role
+-- key, which bypasses RLS entirely — it needs no policy here.
+create policy "push_tokens_all_self" on push_tokens for all
+  using ("userId" = auth.uid())
+  with check ("userId" = auth.uid());

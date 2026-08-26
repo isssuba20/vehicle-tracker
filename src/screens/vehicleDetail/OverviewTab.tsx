@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { useVehicle } from "./VehicleContext";
 import { useAppStore } from "@/state/store";
@@ -9,6 +9,7 @@ import { formatDate, formatKm, formatMoney } from "@/utils/format";
 import { StatusRow } from "@/components/StatusRow";
 import { getEfficiencyDisplay } from "@/utils/vehicleEfficiencyDisplay";
 import { useCurrencyStore } from "@/state/useCurrencyStore";
+import { MarkDoneSheet, RenewalKind } from "./MarkDoneSheet";
 
 export function OverviewTab() {
   const vehicle = useVehicle();
@@ -16,6 +17,7 @@ export function OverviewTab() {
   const colors = useThemeStore((s) => s.colors);
   const currencyCode = useCurrencyStore((s) => s.code);
   const styles = makeStyles(colors);
+  const [markDoneKind, setMarkDoneKind] = useState<RenewalKind | null>(null);
 
   useEffect(() => {
     loadVehicleDetail(vehicle.id);
@@ -40,15 +42,35 @@ export function OverviewTab() {
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: spacing.xl }}>
       <View style={styles.plainSection}>
         <Text style={styles.sectionTitle}>Renewals & Maintenance</Text>
-        <StatusRow label="Registration" dateLabel={formatDate(vehicle.registrationExpiry)} urgency={registration} />
-        <StatusRow label="Insurance" dateLabel={formatDate(vehicle.insuranceExpiry)} urgency={insurance} />
+        <StatusRow
+          label="Registration"
+          dateLabel={formatDate(vehicle.registrationExpiry)}
+          urgency={registration}
+          onMarkDone={() => setMarkDoneKind("registration")}
+        />
+        <StatusRow
+          label="Insurance"
+          dateLabel={formatDate(vehicle.insuranceExpiry)}
+          urgency={insurance}
+          onMarkDone={() => setMarkDoneKind("insurance")}
+        />
         <StatusRow
           label="Next PMS"
           dateLabel={formatDate(vehicle.nextPmsDueDate)}
           urgency={pms}
           extraLabel={pmsExtra}
+          onMarkDone={() => setMarkDoneKind("pms")}
         />
       </View>
+
+      {markDoneKind && (
+        <MarkDoneSheet
+          kind={markDoneKind}
+          visible={!!markDoneKind}
+          vehicle={vehicle}
+          onClose={() => setMarkDoneKind(null)}
+        />
+      )}
 
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>At a glance</Text>

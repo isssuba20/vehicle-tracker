@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Urgency } from "@/types/models";
 import { fonts, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
@@ -10,11 +10,13 @@ export function StatusRow({
   dateLabel,
   urgency,
   extraLabel,
+  onMarkDone,
 }: {
   label: string;
   dateLabel: string;
   urgency: Urgency;
   extraLabel?: string;
+  onMarkDone?: () => void;
 }) {
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
@@ -26,7 +28,14 @@ export function StatusRow({
         <Text style={styles.date}>{dateLabel}</Text>
         {extraLabel ? <Text style={styles.extra}>{extraLabel}</Text> : null}
       </View>
-      <UrgencyBadge urgency={urgency} />
+      <View style={styles.rightCol}>
+        <UrgencyBadge urgency={urgency} />
+        {onMarkDone && (
+          <Pressable onPress={onMarkDone} hitSlop={8}>
+            <Text style={styles.markDone}>Mark done</Text>
+          </Pressable>
+        )}
+      </View>
     </View>
   );
 }
@@ -57,5 +66,14 @@ const makeStyles = (colors: ThemeColors) =>
       fontSize: 12,
       color: colors.textFaint,
       marginTop: 2,
+    },
+    rightCol: {
+      alignItems: "flex-end",
+      gap: 4,
+    },
+    markDone: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 12,
+      color: colors.accent,
     },
   });

@@ -46,6 +46,13 @@
           "cameraPermission": "Garahe uses your camera to take a picture for a vehicle.",
           "microphonePermission": false
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/adaptive-icon.png",
+          "color": "#D9A23A"
+        }
       ]
     ],
     "extra": {

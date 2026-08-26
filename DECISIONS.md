@@ -150,6 +150,51 @@ by disabling the button and guarding `handleSave` re-entry while a save
 is in flight — applied the same fix to QuickAddSheet (fuel/service/
 charging entries) since it had the identical gap.
 
+## "Mark done" advances the due date, it's not a checkbox
+
+Marking a renewal/PMS done opens a small sheet asking for the *new*
+expiry/due date (registration & insurance default to +12 months from
+today, PMS defaults to +6 months and current odometer + 5,000 km) —
+all editable before saving. A plain checkbox would have no lasting
+effect: the underlying date/km is what drives the overdue badge, so
+"done" has to mean "renewed until X," not a flag that gets silently
+re-triggered the moment the badge recomputes. Marking PMS done does
+**not** create a Service tab log entry — that's still a separate,
+deliberate action if the user wants cost/shop details recorded too.
+
+## Daily reminders: server-driven push (Edge Function + cron)
+
+Chosen over the simpler on-device alternative (recompute + reschedule a
+local notification whenever the app is opened) specifically for
+reliability: this fires daily regardless of whether the app was opened
+recently. Cost of that choice — pieces that need one-time manual setup
+neither the app nor I can do unattended:
+
+- `push_tokens` table + RLS added to `supabase/schema.sql` — needs
+  re-running (it's `create table if not exists`, safe to run the whole
+  file again) in the Supabase SQL editor.
+- `supabase/functions/daily-reminders/index.ts` — a Supabase Edge
+  Function (Deno) that recomputes overdue/due-soon status server-side
+  and pushes via Expo's push API. Deliberately duplicates the urgency
+  thresholds from `src/utils/urgency.ts` (30 days / 500 km "due soon")
+  rather than importing them — this runs in Deno against the DB, not in
+  the RN app, so there's no shared module to import from. **If those
+  thresholds ever change, update both places.**
+- Needs deploying (I have no Supabase CLI/API access — only the public
+  anon key) and a daily Cron trigger set up in the Supabase dashboard
+  (Edge Functions → the function → Cron). No secrets to configure
+  manually beyond that: `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` are
+  injected automatically into every Edge Function's environment.
+- `expo-notifications` + `expo-device` + `expo-constants` are native
+  modules — this requires a fresh `eas build`, not just an OTA update,
+  same as the earlier `expo-image-picker` addition.
+- One notification per household per day, only sent when there's at
+  least one overdue or due-soon item — healthy vehicles produce no
+  notification. Overdue and due-soon are combined into a single daily
+  push rather than two separate notification streams, to avoid running
+  a second scheduling/dedup mechanism for what the user's original ask
+  described as one daily check.
+
 ## Card usage in Vehicle Detail → Overview tab
 
 The brief says not to wrap every section in a card. Kept "At a glance" (the

@@ -7,6 +7,7 @@ import { useAuthStore } from "@/state/authStore";
 import { useAppStore } from "@/state/store";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { isSupabaseConfigured } from "@/data/supabase/client";
+import { registerPushToken } from "@/notifications/registerPushToken";
 
 function Loading({ background, accent }: { background: string; accent: string }) {
   return (
@@ -81,6 +82,19 @@ export function AppGate() {
   if (groupIds.length === 0) {
     return <OnboardingScreen />;
   }
+
+  return <RootNavigatorWithPush userId={session.user.id} />;
+}
+
+/**
+ * Registers the device's push token once the user has a household to
+ * receive reminders for — separated out so the registration effect only
+ * runs on the path that actually reaches the main app, not every render.
+ */
+function RootNavigatorWithPush({ userId }: { userId: string }) {
+  useEffect(() => {
+    registerPushToken(userId);
+  }, [userId]);
 
   return <RootNavigator />;
 }
