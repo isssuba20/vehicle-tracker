@@ -4,7 +4,7 @@ import { TabScreenProps } from "@/navigation/types";
 import { useAppStore } from "@/state/store";
 import { VehicleCard } from "@/components/VehicleCard";
 import { colors, fonts, radii, spacing } from "@/theme/theme";
-import { latestKmPerLiter } from "@/utils/fuelEfficiency";
+import { latestKmPerLiter, LatestEfficiency } from "@/utils/fuelEfficiency";
 
 type Props = TabScreenProps<"Dashboard">;
 
@@ -22,7 +22,7 @@ export function DashboardScreen({ navigation }: Props) {
   }, [vehicles.length]);
 
   const kmPerLiterByVehicle = useMemo(() => {
-    const map: Record<string, number | null> = {};
+    const map: Record<string, LatestEfficiency> = {};
     for (const v of vehicles) {
       map[v.id] = latestKmPerLiter(fuelByVehicle[v.id] ?? []);
     }
@@ -55,7 +55,7 @@ export function DashboardScreen({ navigation }: Props) {
         renderItem={({ item }) => (
           <VehicleCard
             vehicle={item}
-            latestKmPerLiter={kmPerLiterByVehicle[item.id] ?? null}
+            efficiency={kmPerLiterByVehicle[item.id] ?? { kmPerLiter: null, implausible: false }}
             onPress={() => navigation.navigate("VehicleDetail", { vehicleId: item.id })}
           />
         )}

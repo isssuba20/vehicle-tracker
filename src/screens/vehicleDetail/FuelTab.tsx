@@ -45,7 +45,9 @@ export function FuelTab() {
             </View>
             <View style={styles.rightCol}>
               <Text style={styles.cost}>{formatPeso(item.cost)}</Text>
-              <Text style={styles.efficiency}>{formatKmPerLiter(item.kmPerLiter)}</Text>
+              <Text style={[styles.efficiency, item.implausible && styles.efficiencyWarning]}>
+                {formatKmPerLiter(item.kmPerLiter, item.implausible)}
+              </Text>
             </View>
           </View>
         )}
@@ -96,6 +98,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.okBright,
     marginTop: 2,
+  },
+  efficiencyWarning: {
+    color: colors.overdueBright,
   },
   empty: {
     paddingVertical: spacing.xl,

@@ -6,8 +6,9 @@ export function formatKm(km: number): string {
   return `${km.toLocaleString("en-PH", { maximumFractionDigits: 0 })} km`;
 }
 
-export function formatKmPerLiter(value: number | null): string {
+export function formatKmPerLiter(value: number | null, implausible = false): string {
   if (value == null) return "—";
+  if (implausible) return "Check entry";
   return `${value.toFixed(1)} km/L`;
 }
 

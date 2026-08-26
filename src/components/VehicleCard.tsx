@@ -4,15 +4,16 @@ import { Vehicle } from "@/types/models";
 import { colors, fonts, radii, spacing } from "@/theme/theme";
 import { dateUrgency, pmsUrgency } from "@/utils/urgency";
 import { formatKm, formatKmPerLiter } from "@/utils/format";
+import { LatestEfficiency } from "@/utils/fuelEfficiency";
 import { UrgencyDot } from "./UrgencyDot";
 
 export function VehicleCard({
   vehicle,
-  latestKmPerLiter,
+  efficiency,
   onPress,
 }: {
   vehicle: Vehicle;
-  latestKmPerLiter: number | null;
+  efficiency: LatestEfficiency;
   onPress: () => void;
 }) {
   const registration = dateUrgency(vehicle.registrationExpiry);
@@ -42,7 +43,9 @@ export function VehicleCard({
         </View>
         <View>
           <Text style={styles.statLabel}>Fuel efficiency</Text>
-          <Text style={styles.statValue}>{formatKmPerLiter(latestKmPerLiter)}</Text>
+          <Text style={[styles.statValue, efficiency.implausible && styles.statValueWarning]}>
+            {formatKmPerLiter(efficiency.kmPerLiter, efficiency.implausible)}
+          </Text>
         </View>
       </View>
     </Pressable>
@@ -97,5 +100,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textPrimary,
     marginTop: 2,
+  },
+  statValueWarning: {
+    color: colors.overdueBright,
+    fontSize: 13,
   },
 });

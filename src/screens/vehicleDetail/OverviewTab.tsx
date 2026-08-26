@@ -52,7 +52,9 @@ export function OverviewTab() {
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statLabel}>Fuel efficiency</Text>
-            <Text style={styles.statValue}>{formatKmPerLiter(efficiency)}</Text>
+            <Text style={[styles.statValue, efficiency.implausible && styles.statValueWarning]}>
+              {formatKmPerLiter(efficiency.kmPerLiter, efficiency.implausible)}
+            </Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statLabel}>Purchased</Text>
@@ -124,6 +126,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textPrimary,
     marginTop: 2,
+  },
+  statValueWarning: {
+    color: colors.overdueBright,
+    fontSize: 13,
   },
   detailLine: {
     flexDirection: "row",
