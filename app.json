@@ -14,8 +14,11 @@
     "userInterfaceStyle": "dark",
     "scheme": "vehicletracker",
     "backgroundColor": "#22262B",
+    "icon": "./assets/icon.png",
     "splash": {
-      "backgroundColor": "#22262B"
+      "backgroundColor": "#22262B",
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -27,6 +30,7 @@
     "android": {
       "package": "com.vehicletracker.app",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#22262B"
       },
       "navigationBar": {
