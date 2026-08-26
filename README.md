@@ -58,6 +58,49 @@ eas build --platform android --profile preview   # or ios
 the finished binary — no local Android Studio or Xcode needed for Android;
 iOS still needs an Apple Developer account on file with EAS.
 
+## Shipping changes without rebuilding (EAS Update)
+
+Once the app is installed as a standalone `.apk`, most changes — screens,
+styles, logic, anything that's plain JS/TS — can be pushed over the air
+instead of rebuilding:
+
+```bash
+eas update --channel preview --message "Describe what changed"
+```
+
+The installed app checks for an update on launch and applies it on the next
+restart. This only works for JS-only changes; anything that touches native
+code (a new library with native modules, an Expo SDK bump) still needs a
+full `eas build` + reinstall, because the update has to match the binary's
+`runtimeVersion` (pinned to `appVersion` in `app.json` — bump `"version"`
+there if you ever do need to break compatibility on purpose).
+
+Match the `--channel` to how the app was built: a `preview`-profile build
+only picks up updates published to the `preview` channel (see the
+`channel` field on each profile in `eas.json`).
+
+### Publishing from Termux (or anywhere without a working Hermes host build)
+
+`eas update` bundles and compiles JS locally before uploading, using
+Hermes's `hermesc` binary — which has no build that runs on Android/Termux
+as the host machine. Running `eas update` directly from Termux fails with
+`Unsupported host platform for Hermes compiler: android`, regardless of
+which platform you're targeting.
+
+`.github/workflows/eas-update.yml` works around this: pushing to `main` or
+`claude/multi-vehicle-maintenance-tracker-9qihjx` runs `eas update` on
+GitHub's Linux runners instead, publishing to `production` or `preview`
+respectively. One-time setup:
+
+1. Generate a token at https://expo.dev/accounts/isssuba/settings/access-tokens
+2. Add it as a repository secret: **Settings → Secrets and variables →
+   Actions → New repository secret**, name `EXPO_TOKEN`.
+
+After that, `git push` from Termux is enough — the Action publishes the
+update. To publish to a specific channel on demand instead of waiting for a
+push, use the **Actions** tab → **EAS Update** → **Run workflow**, which
+lets you type a channel name.
+
 ## Project structure
 
 ```
