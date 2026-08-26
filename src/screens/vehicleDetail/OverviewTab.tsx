@@ -5,14 +5,16 @@ import { useAppStore } from "@/state/store";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { dateUrgency, pmsUrgency } from "@/utils/urgency";
-import { formatDate, formatKm, formatPeso } from "@/utils/format";
+import { formatDate, formatKm, formatMoney } from "@/utils/format";
 import { StatusRow } from "@/components/StatusRow";
 import { getEfficiencyDisplay } from "@/utils/vehicleEfficiencyDisplay";
+import { useCurrencyStore } from "@/state/useCurrencyStore";
 
 export function OverviewTab() {
   const vehicle = useVehicle();
   const { fuelByVehicle, chargingByVehicle, loadVehicleDetail } = useAppStore();
   const colors = useThemeStore((s) => s.colors);
+  const currencyCode = useCurrencyStore((s) => s.code);
   const styles = makeStyles(colors);
 
   useEffect(() => {
@@ -67,7 +69,7 @@ export function OverviewTab() {
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statLabel}>Purchase price</Text>
-            <Text style={styles.statValue}>{formatPeso(vehicle.purchasePrice)}</Text>
+            <Text style={styles.statValue}>{formatMoney(vehicle.purchasePrice, currencyCode)}</Text>
           </View>
         </View>
       </View>

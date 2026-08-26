@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView, Pressable, StyleSheet, Alert } from "react-native";
+import { View, Text, ScrollView, Pressable, StyleSheet, Alert, KeyboardAvoidingView, Platform } from "react-native";
 import uuid from "react-native-uuid";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/navigation/types";
 import { useAppStore } from "@/state/store";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
+import { useCurrencyStore } from "@/state/useCurrencyStore";
 import { TextField } from "@/components/TextField";
 import { DateField } from "@/components/DateField";
 import { PhotoPicker } from "@/components/PhotoPicker";
@@ -25,6 +26,7 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
   const { vehicleId } = route.params;
   const { vehicles, groupIds, addVehicle, updateVehicle, deleteVehicle } = useAppStore();
   const colors = useThemeStore((s) => s.colors);
+  const currencyCode = useCurrencyStore((s) => s.code);
   const styles = makeStyles(colors);
   const existing = vehicles.find((v) => v.id === vehicleId);
   const isEdit = !!existing;
@@ -60,10 +62,12 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
   const [homeChargingNotes, setHomeChargingNotes] = useState(existing?.homeChargingNotes ?? "");
 
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const showEvDetails = fuelType !== "gas";
 
   async function handleSave() {
+    if (submitting) return;
     if (!name.trim() || !make.trim() || !model.trim()) {
       setError("Name, make, and model are required.");
       return;
@@ -102,12 +106,17 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
       homeChargingNotes: showEvDetails ? homeChargingNotes.trim() || undefined : undefined,
     };
 
-    if (isEdit) {
-      await updateVehicle(vehicle);
-    } else {
-      await addVehicle(vehicle);
+    setSubmitting(true);
+    try {
+      if (isEdit) {
+        await updateVehicle(vehicle);
+      } else {
+        await addVehicle(vehicle);
+      }
+      navigation.goBack();
+    } finally {
+      setSubmitting(false);
     }
-    navigation.goBack();
   }
 
   function handleDelete() {
@@ -130,7 +139,16 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.xl * 2 }}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "android" ? 24 : 0}
+    >
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.xl * 2 }}
+      keyboardShouldPersistTaps="handled"
+    >
       <Text style={styles.title}>{isEdit ? "Edit vehicle" : "Add a vehicle"}</Text>
       <Text style={styles.requiredLegend}>
         <Text style={styles.requiredLegendAsterisk}>*</Text> Required
@@ -165,7 +183,7 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
       </View>
 
       <DateField label="Purchase date" valueIso={purchaseDate} onChange={setPurchaseDate} />
-      <TextField label="Purchase price (₱)" placeholder="0" keyboardType="decimal-pad" value={purchasePrice} onChangeText={setPurchasePrice} />
+      <TextField label={`Purchase price (${currencyCode})`} placeholder="0" keyboardType="decimal-pad" value={purchasePrice} onChangeText={setPurchasePrice} />
       <TextField label="Current odometer (km)" placeholder="0" keyboardType="number-pad" value={currentOdometerKm} onChangeText={setCurrentOdometerKm} />
 
       <Text style={styles.sectionTitle}>Renewals & Maintenance</Text>
@@ -215,8 +233,14 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
 
       {error && <Text style={styles.error}>{error}</Text>}
 
-      <Pressable style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.saveText}>{isEdit ? "Save changes" : "Add vehicle"}</Text>
+      <Pressable
+        style={[styles.saveButton, submitting && styles.saveButtonDisabled]}
+        onPress={handleSave}
+        disabled={submitting}
+      >
+        <Text style={styles.saveText}>
+          {submitting ? "Saving…" : isEdit ? "Save changes" : "Add vehicle"}
+        </Text>
       </Pressable>
 
       {isEdit && (
@@ -225,6 +249,7 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
         </Pressable>
       )}
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -301,6 +326,9 @@ const makeStyles = (colors: ThemeColors) => StyleSheet.create({
     paddingVertical: spacing.md,
     alignItems: "center",
     marginTop: spacing.md,
+  },
+  saveButtonDisabled: {
+    opacity: 0.6,
   },
   saveText: {
     fontFamily: fonts.bodySemiBold,

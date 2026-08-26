@@ -128,6 +128,28 @@ add `vehicletracker://auth-callback` to the allow list. Without that,
 Supabase will reject the custom redirect and fall back to its default
 (broken) behavior.
 
+## Currency: a household-wide setting, not per-vehicle or per-entry
+
+Currency is one Settings toggle (persisted locally per device, like the
+theme) applied everywhere money is shown — not stored per vehicle or
+per log entry. A household tracking a foreign-plated vehicle in a
+different currency isn't supported; treating that as out of scope for
+now rather than modeling currency on every Vehicle/FuelLogEntry/etc.
+Amounts themselves are still stored as plain numbers (no currency code
+saved alongside them), so switching the setting re-labels existing
+figures rather than converting them — there's no exchange-rate
+conversion here, just a different symbol/format.
+
+## Vehicle add appearing twice: root cause and fix
+
+Root cause: the Save button on Add/Edit Vehicle had no submitting guard,
+so a second tap (or a slightly slow network round-trip to Supabase,
+much more likely to get double-tapped than the old instant local SQLite
+write) fired `addVehicle` twice before the screen navigated away. Fixed
+by disabling the button and guarding `handleSave` re-entry while a save
+is in flight — applied the same fix to QuickAddSheet (fuel/service/
+charging entries) since it had the identical gap.
+
 ## Card usage in Vehicle Detail → Overview tab
 
 The brief says not to wrap every section in a card. Kept "At a glance" (the

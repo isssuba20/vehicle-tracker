@@ -61,6 +61,10 @@ export class SupabaseRepository implements Repository {
     check(await client().from("service_entries").insert(entry));
   }
 
+  async updateServiceEntry(entry: ServiceLogEntry): Promise<void> {
+    check(await client().from("service_entries").update(entry).eq("id", entry.id));
+  }
+
   async deleteServiceEntry(id: string): Promise<void> {
     check(await client().from("service_entries").delete().eq("id", id));
   }
@@ -78,6 +82,10 @@ export class SupabaseRepository implements Repository {
     check(await client().from("fuel_entries").insert(entry));
   }
 
+  async updateFuelEntry(entry: FuelLogEntry): Promise<void> {
+    check(await client().from("fuel_entries").update(entry).eq("id", entry.id));
+  }
+
   async deleteFuelEntry(id: string): Promise<void> {
     check(await client().from("fuel_entries").delete().eq("id", id));
   }
@@ -93,6 +101,10 @@ export class SupabaseRepository implements Repository {
 
   async addChargingEntry(entry: ChargingLogEntry): Promise<void> {
     check(await client().from("charging_entries").insert(entry));
+  }
+
+  async updateChargingEntry(entry: ChargingLogEntry): Promise<void> {
+    check(await client().from("charging_entries").update(entry).eq("id", entry.id));
   }
 
   async deleteChargingEntry(id: string): Promise<void> {

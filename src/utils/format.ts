@@ -1,5 +1,10 @@
-export function formatPeso(amount: number): string {
-  return `₱${amount.toLocaleString("en-PH", { maximumFractionDigits: 0 })}`;
+/** Formats a number as currency. Intl handles the right symbol/placement per ISO code regardless of locale. */
+export function formatMoney(amount: number, currencyCode: string): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currencyCode,
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
 
 export function formatKm(km: number): string {

@@ -24,16 +24,19 @@ export interface Repository {
   // Service log
   getServiceEntries(vehicleId: string): Promise<ServiceLogEntry[]>;
   addServiceEntry(entry: ServiceLogEntry): Promise<void>;
+  updateServiceEntry(entry: ServiceLogEntry): Promise<void>;
   deleteServiceEntry(id: string): Promise<void>;
 
   // Fuel log
   getFuelEntries(vehicleId: string): Promise<FuelLogEntry[]>;
   addFuelEntry(entry: FuelLogEntry): Promise<void>;
+  updateFuelEntry(entry: FuelLogEntry): Promise<void>;
   deleteFuelEntry(id: string): Promise<void>;
 
   // Charging log (electric/hybrid vehicles)
   getChargingEntries(vehicleId: string): Promise<ChargingLogEntry[]>;
   addChargingEntry(entry: ChargingLogEntry): Promise<void>;
+  updateChargingEntry(entry: ChargingLogEntry): Promise<void>;
   deleteChargingEntry(id: string): Promise<void>;
 
   // Groups / sharing

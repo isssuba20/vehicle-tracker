@@ -1,20 +1,25 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
+import { View, Text, FlatList, Pressable, StyleSheet, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { useVehicle } from "./VehicleContext";
 import { useAppStore } from "@/state/store";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
-import { formatDate, formatKm, formatKmPerKwh, formatPeso } from "@/utils/format";
+import { useCurrencyStore } from "@/state/useCurrencyStore";
+import { formatDate, formatKm, formatKmPerKwh, formatMoney } from "@/utils/format";
 import { withComputedChargingEfficiency } from "@/utils/chargingEfficiency";
 import { QuickAddSheet } from "./QuickAddSheet";
+import { ChargingLogEntry } from "@/types/models";
 
 export function ChargingTab() {
   const vehicle = useVehicle();
-  const { chargingByVehicle, loadVehicleDetail } = useAppStore();
+  const { chargingByVehicle, loadVehicleDetail, deleteChargingEntry } = useAppStore();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<ChargingLogEntry | undefined>(undefined);
   const insets = useSafeAreaInsets();
   const colors = useThemeStore((s) => s.colors);
+  const currencyCode = useCurrencyStore((s) => s.code);
   const styles = makeStyles(colors);
 
   useEffect(() => {
@@ -25,6 +30,23 @@ export function ChargingTab() {
     () => withComputedChargingEfficiency(chargingByVehicle[vehicle.id] ?? []),
     [chargingByVehicle, vehicle.id]
   );
+
+  function openAdd() {
+    setEditingEntry(undefined);
+    setSheetOpen(true);
+  }
+
+  function openEdit(entry: ChargingLogEntry) {
+    setEditingEntry(entry);
+    setSheetOpen(true);
+  }
+
+  function handleDelete(entry: ChargingLogEntry) {
+    Alert.alert("Delete this charging log?", "This can't be undone.", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Delete", style: "destructive", onPress: () => deleteChargingEntry(entry.id, vehicle.id) },
+    ]);
+  }
 
   return (
     <View style={styles.container}>
@@ -41,7 +63,7 @@ export function ChargingTab() {
           </View>
         }
         renderItem={({ item }) => (
-          <View style={styles.row}>
+          <Pressable style={styles.row} onPress={() => openEdit(item)}>
             <View style={{ flex: 1 }}>
               <Text style={styles.date}>{formatDate(item.date)}</Text>
               <Text style={styles.meta}>
@@ -49,21 +71,29 @@ export function ChargingTab() {
               </Text>
             </View>
             <View style={styles.rightCol}>
-              <Text style={styles.cost}>{formatPeso(item.cost)}</Text>
+              <Text style={styles.cost}>{formatMoney(item.cost, currencyCode)}</Text>
               <Text style={[styles.efficiency, item.implausible && styles.efficiencyWarning]}>
                 {formatKmPerKwh(item.kmPerKwh, item.implausible)}
               </Text>
             </View>
-          </View>
+            <Pressable style={styles.deleteIcon} onPress={() => handleDelete(item)} hitSlop={8}>
+              <Ionicons name="trash-outline" size={16} color={colors.textFaint} />
+            </Pressable>
+          </Pressable>
         )}
       />
       <Pressable
         style={[styles.addButton, { bottom: spacing.md + insets.bottom }]}
-        onPress={() => setSheetOpen(true)}
+        onPress={openAdd}
       >
         <Text style={styles.addButtonText}>+ Log a charge</Text>
       </Pressable>
-      <QuickAddSheet kind="charging" visible={sheetOpen} onClose={() => setSheetOpen(false)} />
+      <QuickAddSheet
+        kind="charging"
+        visible={sheetOpen}
+        entry={editingEntry}
+        onClose={() => setSheetOpen(false)}
+      />
     </View>
   );
 }
@@ -76,6 +106,7 @@ const makeStyles = (colors: ThemeColors) =>
     },
     row: {
       flexDirection: "row",
+      alignItems: "flex-start",
       backgroundColor: colors.surface,
       borderRadius: radii.md,
       borderWidth: 1,
@@ -96,6 +127,7 @@ const makeStyles = (colors: ThemeColors) =>
     },
     rightCol: {
       alignItems: "flex-end",
+      marginRight: spacing.sm,
     },
     cost: {
       fontFamily: fonts.mono,
@@ -110,6 +142,9 @@ const makeStyles = (colors: ThemeColors) =>
     },
     efficiencyWarning: {
       color: colors.overdueBright,
+    },
+    deleteIcon: {
+      padding: 4,
     },
     empty: {
       paddingVertical: spacing.xl,

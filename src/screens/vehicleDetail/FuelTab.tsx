@@ -1,20 +1,25 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
+import { View, Text, FlatList, Pressable, StyleSheet, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { useVehicle } from "./VehicleContext";
 import { useAppStore } from "@/state/store";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
-import { formatDate, formatKm, formatKmPerLiter, formatPeso } from "@/utils/format";
+import { useCurrencyStore } from "@/state/useCurrencyStore";
+import { formatDate, formatKm, formatKmPerLiter, formatMoney } from "@/utils/format";
 import { withComputedEfficiency } from "@/utils/fuelEfficiency";
 import { QuickAddSheet } from "./QuickAddSheet";
+import { FuelLogEntry } from "@/types/models";
 
 export function FuelTab() {
   const vehicle = useVehicle();
-  const { fuelByVehicle, loadVehicleDetail } = useAppStore();
+  const { fuelByVehicle, loadVehicleDetail, deleteFuelEntry } = useAppStore();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<FuelLogEntry | undefined>(undefined);
   const insets = useSafeAreaInsets();
   const colors = useThemeStore((s) => s.colors);
+  const currencyCode = useCurrencyStore((s) => s.code);
   const styles = makeStyles(colors);
 
   useEffect(() => {
@@ -25,6 +30,23 @@ export function FuelTab() {
     () => withComputedEfficiency(fuelByVehicle[vehicle.id] ?? []),
     [fuelByVehicle, vehicle.id]
   );
+
+  function openAdd() {
+    setEditingEntry(undefined);
+    setSheetOpen(true);
+  }
+
+  function openEdit(entry: FuelLogEntry) {
+    setEditingEntry(entry);
+    setSheetOpen(true);
+  }
+
+  function handleDelete(entry: FuelLogEntry) {
+    Alert.alert("Delete this fuel log?", "This can't be undone.", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Delete", style: "destructive", onPress: () => deleteFuelEntry(entry.id, vehicle.id) },
+    ]);
+  }
 
   return (
     <View style={styles.container}>
@@ -41,7 +63,7 @@ export function FuelTab() {
           </View>
         }
         renderItem={({ item }) => (
-          <View style={styles.row}>
+          <Pressable style={styles.row} onPress={() => openEdit(item)}>
             <View style={{ flex: 1 }}>
               <Text style={styles.date}>{formatDate(item.date)}</Text>
               <Text style={styles.meta}>
@@ -49,21 +71,29 @@ export function FuelTab() {
               </Text>
             </View>
             <View style={styles.rightCol}>
-              <Text style={styles.cost}>{formatPeso(item.cost)}</Text>
+              <Text style={styles.cost}>{formatMoney(item.cost, currencyCode)}</Text>
               <Text style={[styles.efficiency, item.implausible && styles.efficiencyWarning]}>
                 {formatKmPerLiter(item.kmPerLiter, item.implausible)}
               </Text>
             </View>
-          </View>
+            <Pressable style={styles.deleteIcon} onPress={() => handleDelete(item)} hitSlop={8}>
+              <Ionicons name="trash-outline" size={16} color={colors.textFaint} />
+            </Pressable>
+          </Pressable>
         )}
       />
       <Pressable
         style={[styles.addButton, { bottom: spacing.md + insets.bottom }]}
-        onPress={() => setSheetOpen(true)}
+        onPress={openAdd}
       >
         <Text style={styles.addButtonText}>+ Log fuel</Text>
       </Pressable>
-      <QuickAddSheet kind="fuel" visible={sheetOpen} onClose={() => setSheetOpen(false)} />
+      <QuickAddSheet
+        kind="fuel"
+        visible={sheetOpen}
+        entry={editingEntry}
+        onClose={() => setSheetOpen(false)}
+      />
     </View>
   );
 }
@@ -76,6 +106,7 @@ const makeStyles = (colors: ThemeColors) =>
     },
     row: {
       flexDirection: "row",
+      alignItems: "flex-start",
       backgroundColor: colors.surface,
       borderRadius: radii.md,
       borderWidth: 1,
@@ -96,6 +127,7 @@ const makeStyles = (colors: ThemeColors) =>
     },
     rightCol: {
       alignItems: "flex-end",
+      marginRight: spacing.sm,
     },
     cost: {
       fontFamily: fonts.mono,
@@ -110,6 +142,9 @@ const makeStyles = (colors: ThemeColors) =>
     },
     efficiencyWarning: {
       color: colors.overdueBright,
+    },
+    deleteIcon: {
+      padding: 4,
     },
     empty: {
       paddingVertical: spacing.xl,

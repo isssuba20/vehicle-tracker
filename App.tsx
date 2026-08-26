@@ -20,6 +20,7 @@ import { View, ActivityIndicator } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AppGate } from "@/navigation/AppGate";
 import { useThemeStore } from "@/theme/useThemeStore";
+import { useCurrencyStore } from "@/state/useCurrencyStore";
 
 export default function App() {
   const [monoLoaded] = useJetBrainsMono({ JetBrainsMono_400Regular, JetBrainsMono_500Medium });
@@ -27,12 +28,15 @@ export default function App() {
   const [iconsLoaded] = useIconFont(Ionicons.font);
 
   const { mode, colors, hydrated, init } = useThemeStore();
+  const currencyHydrated = useCurrencyStore((s) => s.hydrated);
+  const initCurrency = useCurrencyStore((s) => s.init);
 
   useEffect(() => {
     init();
+    initCurrency();
   }, []);
 
-  const fontsReady = monoLoaded && manropeLoaded && iconsLoaded && hydrated;
+  const fontsReady = monoLoaded && manropeLoaded && iconsLoaded && hydrated && currencyHydrated;
 
   if (!fontsReady) {
     return (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Pressable, StyleSheet, Alert } from "react-native";
+import { View, Text, ScrollView, Pressable, StyleSheet, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Updates from "expo-updates";
 import { useAppStore } from "@/state/store";
@@ -7,6 +7,7 @@ import { useAuthStore } from "@/state/authStore";
 import { isSupabaseConfigured } from "@/data/supabase/client";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
+import { CURRENCY_OPTIONS, useCurrencyStore } from "@/state/useCurrencyStore";
 import { TextField } from "@/components/TextField";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -26,6 +27,8 @@ function buildInfoLabel(): string {
 export function SettingsScreen() {
   const { groupIds, members, loadMembers, inviteMember, currentUserId } = useAppStore();
   const signOut = useAuthStore((s) => s.signOut);
+  const currencyCode = useCurrencyStore((s) => s.code);
+  const setCurrencyCode = useCurrencyStore((s) => s.setCode);
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
   const insets = useSafeAreaInsets();
@@ -49,7 +52,10 @@ export function SettingsScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: spacing.lg + insets.top }]}>
+    <ScrollView
+      style={[styles.container, { paddingTop: spacing.lg + insets.top }]}
+      contentContainerStyle={{ paddingBottom: spacing.xl }}
+    >
       <View style={styles.titleRow}>
         <Text style={styles.title}>Settings</Text>
         <ThemeToggle colors={colors} />
@@ -61,18 +67,37 @@ export function SettingsScreen() {
           Everyone in this group can view all vehicles and log fuel or service entries.
         </Text>
 
-        <FlatList
-          data={members}
-          keyExtractor={(m) => m.userId}
-          renderItem={({ item }) => (
-            <View style={styles.memberRow}>
-              <Text style={styles.memberName}>{item.displayName}</Text>
-              <View style={styles.roleBadge}>
-                <Text style={styles.roleText}>{item.role}</Text>
-              </View>
+        {members.map((item) => (
+          <View key={item.userId} style={styles.memberRow}>
+            <Text style={styles.memberName}>{item.displayName}</Text>
+            <View style={styles.roleBadge}>
+              <Text style={styles.roleText}>{item.role}</Text>
             </View>
-          )}
-        />
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Currency</Text>
+        <Text style={styles.sectionBody}>
+          Used for purchase price, fuel, service, and charging costs across the app.
+        </Text>
+        <View style={styles.currencyGrid}>
+          {CURRENCY_OPTIONS.map((opt) => {
+            const active = opt.code === currencyCode;
+            return (
+              <Pressable
+                key={opt.code}
+                style={[styles.currencyChip, active && styles.currencyChipActive]}
+                onPress={() => setCurrencyCode(opt.code)}
+              >
+                <Text style={[styles.currencyChipText, active && styles.currencyChipTextActive]}>
+                  {opt.code}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
 
       <View style={styles.section}>
@@ -108,7 +133,7 @@ export function SettingsScreen() {
       )}
 
       <Text style={styles.buildInfo}>{buildInfoLabel()}</Text>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -174,6 +199,32 @@ const makeStyles = (colors: ThemeColors) =>
       fontSize: 11,
       color: colors.textMuted,
       textTransform: "capitalize",
+    },
+    currencyGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing.sm,
+    },
+    currencyChip: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs + 2,
+      borderRadius: radii.sm,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.background,
+    },
+    currencyChipActive: {
+      backgroundColor: colors.accent,
+      borderColor: colors.accent,
+    },
+    currencyChipText: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: colors.textMuted,
+    },
+    currencyChipTextActive: {
+      color: colors.onAccent,
+      fontFamily: fonts.bodySemiBold,
     },
     inviteButton: {
       backgroundColor: colors.accent,

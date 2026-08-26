@@ -40,8 +40,16 @@ interface AppState {
   deleteVehicle: (vehicleId: string) => Promise<void>;
 
   addServiceEntry: (entry: ServiceLogEntry) => Promise<void>;
+  updateServiceEntry: (entry: ServiceLogEntry) => Promise<void>;
+  deleteServiceEntry: (id: string, vehicleId: string) => Promise<void>;
+
   addFuelEntry: (entry: FuelLogEntry) => Promise<void>;
+  updateFuelEntry: (entry: FuelLogEntry) => Promise<void>;
+  deleteFuelEntry: (id: string, vehicleId: string) => Promise<void>;
+
   addChargingEntry: (entry: ChargingLogEntry) => Promise<void>;
+  updateChargingEntry: (entry: ChargingLogEntry) => Promise<void>;
+  deleteChargingEntry: (id: string, vehicleId: string) => Promise<void>;
 
   inviteMember: (groupId: string, displayName: string) => Promise<string>;
 }
@@ -146,16 +154,49 @@ export const useAppStore = create<AppState>((set, get) => ({
     await get().refreshVehicles();
   },
 
+  updateServiceEntry: async (entry: ServiceLogEntry) => {
+    await repo.updateServiceEntry(entry);
+    await get().loadVehicleDetail(entry.vehicleId);
+    await get().refreshVehicles();
+  },
+
+  deleteServiceEntry: async (id: string, vehicleId: string) => {
+    await repo.deleteServiceEntry(id);
+    await get().loadVehicleDetail(vehicleId);
+  },
+
   addFuelEntry: async (entry: FuelLogEntry) => {
     await repo.addFuelEntry(entry);
     await get().loadVehicleDetail(entry.vehicleId);
     await get().refreshVehicles();
   },
 
+  updateFuelEntry: async (entry: FuelLogEntry) => {
+    await repo.updateFuelEntry(entry);
+    await get().loadVehicleDetail(entry.vehicleId);
+    await get().refreshVehicles();
+  },
+
+  deleteFuelEntry: async (id: string, vehicleId: string) => {
+    await repo.deleteFuelEntry(id);
+    await get().loadVehicleDetail(vehicleId);
+  },
+
   addChargingEntry: async (entry: ChargingLogEntry) => {
     await repo.addChargingEntry(entry);
     await get().loadVehicleDetail(entry.vehicleId);
     await get().refreshVehicles();
+  },
+
+  updateChargingEntry: async (entry: ChargingLogEntry) => {
+    await repo.updateChargingEntry(entry);
+    await get().loadVehicleDetail(entry.vehicleId);
+    await get().refreshVehicles();
+  },
+
+  deleteChargingEntry: async (id: string, vehicleId: string) => {
+    await repo.deleteChargingEntry(id);
+    await get().loadVehicleDetail(vehicleId);
   },
 
   inviteMember: async (groupId: string, displayName: string) => {

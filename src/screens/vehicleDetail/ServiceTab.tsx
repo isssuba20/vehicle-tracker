@@ -1,19 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
+import { View, Text, FlatList, Pressable, StyleSheet, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { useVehicle } from "./VehicleContext";
 import { useAppStore } from "@/state/store";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
-import { formatDate, formatKm, formatPeso } from "@/utils/format";
+import { useCurrencyStore } from "@/state/useCurrencyStore";
+import { formatDate, formatKm, formatMoney } from "@/utils/format";
 import { QuickAddSheet } from "./QuickAddSheet";
+import { ServiceLogEntry } from "@/types/models";
 
 export function ServiceTab() {
   const vehicle = useVehicle();
-  const { serviceByVehicle, loadVehicleDetail } = useAppStore();
+  const { serviceByVehicle, loadVehicleDetail, deleteServiceEntry } = useAppStore();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<ServiceLogEntry | undefined>(undefined);
   const insets = useSafeAreaInsets();
   const colors = useThemeStore((s) => s.colors);
+  const currencyCode = useCurrencyStore((s) => s.code);
   const styles = makeStyles(colors);
 
   useEffect(() => {
@@ -21,6 +26,23 @@ export function ServiceTab() {
   }, [vehicle.id]);
 
   const entries = serviceByVehicle[vehicle.id] ?? [];
+
+  function openAdd() {
+    setEditingEntry(undefined);
+    setSheetOpen(true);
+  }
+
+  function openEdit(entry: ServiceLogEntry) {
+    setEditingEntry(entry);
+    setSheetOpen(true);
+  }
+
+  function handleDelete(entry: ServiceLogEntry) {
+    Alert.alert("Delete this service entry?", "This can't be undone.", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Delete", style: "destructive", onPress: () => deleteServiceEntry(entry.id, vehicle.id) },
+    ]);
+  }
 
   return (
     <View style={styles.container}>
@@ -37,26 +59,36 @@ export function ServiceTab() {
           </View>
         }
         renderItem={({ item }) => (
-          <View style={styles.row}>
+          <Pressable style={styles.row} onPress={() => openEdit(item)}>
             <View style={styles.rowTop}>
               <Text style={styles.type}>{item.type}</Text>
-              <Text style={styles.cost}>{formatPeso(item.cost)}</Text>
+              <View style={styles.rowTopRight}>
+                <Text style={styles.cost}>{formatMoney(item.cost, currencyCode)}</Text>
+                <Pressable style={styles.deleteIcon} onPress={() => handleDelete(item)} hitSlop={8}>
+                  <Ionicons name="trash-outline" size={16} color={colors.textFaint} />
+                </Pressable>
+              </View>
             </View>
             <Text style={styles.meta}>
               {formatDate(item.date)} · {formatKm(item.odometerKm)}
               {item.shop ? ` · ${item.shop}` : ""}
             </Text>
             {item.notes ? <Text style={styles.notes}>{item.notes}</Text> : null}
-          </View>
+          </Pressable>
         )}
       />
       <Pressable
         style={[styles.addButton, { bottom: spacing.md + insets.bottom }]}
-        onPress={() => setSheetOpen(true)}
+        onPress={openAdd}
       >
         <Text style={styles.addButtonText}>+ Log a service</Text>
       </Pressable>
-      <QuickAddSheet kind="service" visible={sheetOpen} onClose={() => setSheetOpen(false)} />
+      <QuickAddSheet
+        kind="service"
+        visible={sheetOpen}
+        entry={editingEntry}
+        onClose={() => setSheetOpen(false)}
+      />
     </View>
   );
 }
@@ -78,6 +110,15 @@ const makeStyles = (colors: ThemeColors) =>
   rowTop: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
+  },
+  rowTopRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+  },
+  deleteIcon: {
+    padding: 4,
   },
   type: {
     fontFamily: fonts.bodySemiBold,

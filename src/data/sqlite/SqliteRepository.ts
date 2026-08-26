@@ -143,6 +143,18 @@ export class SqliteRepository implements Repository {
     );
   }
 
+  async updateServiceEntry(e: ServiceLogEntry): Promise<void> {
+    const db = await this.db();
+    await db.runAsync(
+      `UPDATE service_entries SET date=?, type=?, cost=?, shop=?, odometerKm=?, notes=? WHERE id=?`,
+      [e.date, e.type, e.cost, e.shop, e.odometerKm, e.notes ?? null, e.id]
+    );
+    await db.runAsync(
+      `UPDATE vehicles SET currentOdometerKm = MAX(currentOdometerKm, ?) WHERE id = ?`,
+      [e.odometerKm, e.vehicleId]
+    );
+  }
+
   async deleteServiceEntry(id: string): Promise<void> {
     const db = await this.db();
     await db.runAsync(`DELETE FROM service_entries WHERE id = ?`, [id]);
@@ -169,6 +181,18 @@ export class SqliteRepository implements Repository {
     );
   }
 
+  async updateFuelEntry(e: FuelLogEntry): Promise<void> {
+    const db = await this.db();
+    await db.runAsync(
+      `UPDATE fuel_entries SET date=?, liters=?, cost=?, odometerKm=? WHERE id=?`,
+      [e.date, e.liters, e.cost, e.odometerKm, e.id]
+    );
+    await db.runAsync(
+      `UPDATE vehicles SET currentOdometerKm = MAX(currentOdometerKm, ?) WHERE id = ?`,
+      [e.odometerKm, e.vehicleId]
+    );
+  }
+
   async deleteFuelEntry(id: string): Promise<void> {
     const db = await this.db();
     await db.runAsync(`DELETE FROM fuel_entries WHERE id = ?`, [id]);
@@ -188,6 +212,18 @@ export class SqliteRepository implements Repository {
       `INSERT INTO charging_entries (id, vehicleId, date, kwh, cost, odometerKm)
        VALUES (?,?,?,?,?,?)`,
       [e.id, e.vehicleId, e.date, e.kwh, e.cost, e.odometerKm]
+    );
+    await db.runAsync(
+      `UPDATE vehicles SET currentOdometerKm = MAX(currentOdometerKm, ?) WHERE id = ?`,
+      [e.odometerKm, e.vehicleId]
+    );
+  }
+
+  async updateChargingEntry(e: ChargingLogEntry): Promise<void> {
+    const db = await this.db();
+    await db.runAsync(
+      `UPDATE charging_entries SET date=?, kwh=?, cost=?, odometerKm=? WHERE id=?`,
+      [e.date, e.kwh, e.cost, e.odometerKm, e.id]
     );
     await db.runAsync(
       `UPDATE vehicles SET currentOdometerKm = MAX(currentOdometerKm, ?) WHERE id = ?`,
