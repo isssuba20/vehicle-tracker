@@ -10,6 +10,7 @@ import { useCurrencyStore } from "@/state/useCurrencyStore";
 import { TextField } from "@/components/TextField";
 import { DateField } from "@/components/DateField";
 import { PhotoPicker } from "@/components/PhotoPicker";
+import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { Vehicle, FuelType } from "@/types/models";
 
 type Props = NativeStackScreenProps<RootStackParamList, "AddEditVehicle">;
@@ -233,15 +234,15 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
 
       {error && <Text style={styles.error}>{error}</Text>}
 
-      <Pressable
-        style={[styles.saveButton, submitting && styles.saveButtonDisabled]}
+      <AnimatedPressable
+        style={styles.saveButton}
         onPress={handleSave}
         disabled={submitting}
       >
         <Text style={styles.saveText}>
           {submitting ? "Saving…" : isEdit ? "Save changes" : "Add vehicle"}
         </Text>
-      </Pressable>
+      </AnimatedPressable>
 
       {isEdit && (
         <Pressable style={styles.deleteButton} onPress={handleDelete}>
@@ -326,9 +327,6 @@ const makeStyles = (colors: ThemeColors) => StyleSheet.create({
     paddingVertical: spacing.md,
     alignItems: "center",
     marginTop: spacing.md,
-  },
-  saveButtonDisabled: {
-    opacity: 0.6,
   },
   saveText: {
     fontFamily: fonts.bodySemiBold,

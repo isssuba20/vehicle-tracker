@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { Modal, View, Text, Pressable, ScrollView, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { Modal, View, Text, Pressable, ScrollView, Animated, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { TextField } from "@/components/TextField";
 import { DateField } from "@/components/DateField";
+import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { useAppStore } from "@/state/store";
+import { formatDate } from "@/utils/format";
 import { Vehicle } from "@/types/models";
 
 export type RenewalKind = "registration" | "insurance" | "pms";
@@ -20,6 +24,8 @@ const KIND_META: Record<RenewalKind, { title: string; dateLabel: string; default
   insurance: { title: "Insurance renewed", dateLabel: "New expiry date", defaultMonths: 12 },
   pms: { title: "Service completed", dateLabel: "Next due date", defaultMonths: 6 },
 };
+
+const COMPLETE_DISMISS_MS = 900;
 
 export function MarkDoneSheet({
   kind,
@@ -40,11 +46,15 @@ export function MarkDoneSheet({
   const [date, setDate] = useState(isoMonthsFromToday(meta.defaultMonths));
   const [dueKm, setDueKm] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [completed, setCompleted] = useState(false);
+  const checkAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!visible) return;
     setDate(isoMonthsFromToday(meta.defaultMonths));
     setDueKm(kind === "pms" ? String(vehicle.currentOdometerKm + 5000) : "");
+    setCompleted(false);
+    checkAnim.setValue(0);
   }, [visible, kind]);
 
   async function handleSave() {
@@ -63,7 +73,10 @@ export function MarkDoneSheet({
           nextPmsDueKm: kmNum != null && !Number.isNaN(kmNum) ? kmNum : undefined,
         });
       }
-      onClose();
+      setCompleted(true);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      Animated.timing(checkAnim, { toValue: 1, duration: 220, useNativeDriver: true }).start();
+      setTimeout(onClose, COMPLETE_DISMISS_MS);
     } finally {
       setSubmitting(false);
     }
@@ -79,34 +92,53 @@ export function MarkDoneSheet({
         <Pressable style={styles.backdropTouchable} onPress={onClose} />
         <View style={styles.sheet}>
           <View style={styles.handle} />
-          <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-            <Text style={styles.title}>{meta.title}</Text>
 
-            <DateField label={meta.dateLabel} valueIso={date} onChange={setDate} />
-
-            {kind === "pms" && (
-              <TextField
-                label="Next due at (km) — optional"
-                placeholder="Leave blank if by date only"
-                keyboardType="number-pad"
-                value={dueKm}
-                onChangeText={setDueKm}
-              />
-            )}
-
-            <View style={styles.actions}>
-              <Pressable style={[styles.button, styles.cancelButton]} onPress={onClose}>
-                <Text style={styles.cancelText}>Cancel</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.button, styles.saveButton, submitting && styles.saveButtonDisabled]}
-                onPress={handleSave}
-                disabled={submitting}
+          {completed ? (
+            <View style={styles.completedWrap}>
+              <Animated.View
+                style={[
+                  styles.checkCircle,
+                  {
+                    opacity: checkAnim,
+                    transform: [{ scale: checkAnim.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] }) }],
+                  },
+                ]}
               >
-                <Text style={styles.saveText}>{submitting ? "Saving…" : "Save"}</Text>
-              </Pressable>
+                <Ionicons name="checkmark" size={30} color={colors.onAccent} />
+              </Animated.View>
+              <Text style={styles.completedText}>{meta.title}</Text>
+              <Text style={styles.completedSubtext}>Next due {formatDate(date)}</Text>
             </View>
-          </ScrollView>
+          ) : (
+            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+              <Text style={styles.title}>{meta.title}</Text>
+
+              <DateField label={meta.dateLabel} valueIso={date} onChange={setDate} />
+
+              {kind === "pms" && (
+                <TextField
+                  label="Next due at (km) — optional"
+                  placeholder="Leave blank if by date only"
+                  keyboardType="number-pad"
+                  value={dueKm}
+                  onChangeText={setDueKm}
+                />
+              )}
+
+              <View style={styles.actions}>
+                <Pressable style={[styles.button, styles.cancelButton]} onPress={onClose}>
+                  <Text style={styles.cancelText}>Cancel</Text>
+                </Pressable>
+                <AnimatedPressable
+                  style={[styles.button, styles.saveButton]}
+                  onPress={handleSave}
+                  disabled={submitting}
+                >
+                  <Text style={styles.saveText}>{submitting ? "Saving…" : "Save"}</Text>
+                </AnimatedPressable>
+              </View>
+            </ScrollView>
+          )}
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -167,11 +199,32 @@ const makeStyles = (colors: ThemeColors) =>
     saveButton: {
       backgroundColor: colors.accent,
     },
-    saveButtonDisabled: {
-      opacity: 0.6,
-    },
     saveText: {
       fontFamily: fonts.bodySemiBold,
       color: colors.onAccent,
+    },
+    completedWrap: {
+      alignItems: "center",
+      paddingVertical: spacing.xl,
+    },
+    checkCircle: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: colors.ok,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: spacing.md,
+    },
+    completedText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 16,
+      color: colors.textPrimary,
+    },
+    completedSubtext: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textMuted,
+      marginTop: 4,
     },
   });

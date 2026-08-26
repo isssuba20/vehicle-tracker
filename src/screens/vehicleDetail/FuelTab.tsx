@@ -10,6 +10,7 @@ import { useCurrencyStore } from "@/state/useCurrencyStore";
 import { formatDate, formatKm, formatKmPerLiter, formatMoney } from "@/utils/format";
 import { withComputedEfficiency } from "@/utils/fuelEfficiency";
 import { QuickAddSheet } from "./QuickAddSheet";
+import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { FuelLogEntry } from "@/types/models";
 
 export function FuelTab() {
@@ -82,12 +83,12 @@ export function FuelTab() {
           </Pressable>
         )}
       />
-      <Pressable
+      <AnimatedPressable
         style={[styles.addButton, { bottom: spacing.md + insets.bottom }]}
         onPress={openAdd}
       >
         <Text style={styles.addButtonText}>+ Log fuel</Text>
-      </Pressable>
+      </AnimatedPressable>
       <QuickAddSheet
         kind="fuel"
         visible={sheetOpen}

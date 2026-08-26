@@ -4,6 +4,7 @@ import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { useAuthStore } from "@/state/authStore";
 import { TextField } from "@/components/TextField";
+import { AnimatedPressable } from "@/components/AnimatedPressable";
 
 export function AuthScreen() {
   const colors = useThemeStore((s) => s.colors);
@@ -72,7 +73,7 @@ export function AuthScreen() {
           placeholder="••••••••"
         />
 
-        <Pressable style={styles.primaryButton} onPress={handleSubmit} disabled={submitting}>
+        <AnimatedPressable style={styles.primaryButton} onPress={handleSubmit} disabled={submitting}>
           {submitting ? (
             <ActivityIndicator color={colors.onAccent} />
           ) : (
@@ -80,7 +81,7 @@ export function AuthScreen() {
               {mode === "signIn" ? "Sign in" : "Sign up"}
             </Text>
           )}
-        </Pressable>
+        </AnimatedPressable>
 
         <Pressable
           style={styles.switchModeButton}

@@ -9,6 +9,7 @@ import { formatKm } from "@/utils/format";
 import { EfficiencyDisplay } from "@/utils/vehicleEfficiencyDisplay";
 import { usePhotoPicker } from "@/utils/usePhotoPicker";
 import { PhotoActionSheet } from "./PhotoActionSheet";
+import { AnimatedPressable } from "./AnimatedPressable";
 import { UrgencyDot } from "./UrgencyDot";
 
 export function VehicleCard({
@@ -31,7 +32,7 @@ export function VehicleCard({
   const pms = pmsUrgency(vehicle.nextPmsDueDate, vehicle.nextPmsDueKm, vehicle.currentOdometerKm);
 
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
+    <AnimatedPressable onPress={onPress} style={styles.card} scaleTo={0.98}>
       <View style={styles.header}>
         <Pressable onPress={openPicker} style={styles.avatar}>
           {vehicle.photoUri ? (
@@ -66,7 +67,7 @@ export function VehicleCard({
         </View>
       </View>
       <PhotoActionSheet {...sheetProps} />
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
@@ -79,9 +80,6 @@ const makeStyles = (colors: ThemeColors) =>
       marginBottom: spacing.md,
       borderWidth: 1,
       borderColor: colors.border,
-    },
-    pressed: {
-      opacity: 0.85,
     },
     header: {
       flexDirection: "row",

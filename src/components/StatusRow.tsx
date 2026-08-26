@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
+import * as Haptics from "expo-haptics";
 import { Urgency } from "@/types/models";
 import { fonts, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
@@ -31,7 +32,13 @@ export function StatusRow({
       <View style={styles.rightCol}>
         <UrgencyBadge urgency={urgency} />
         {onMarkDone && (
-          <Pressable onPress={onMarkDone} hitSlop={8}>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+              onMarkDone();
+            }}
+            hitSlop={8}
+          >
             <Text style={styles.markDone}>Mark done</Text>
           </Pressable>
         )}

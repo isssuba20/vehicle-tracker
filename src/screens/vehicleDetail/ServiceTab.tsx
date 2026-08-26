@@ -9,6 +9,7 @@ import { useThemeStore } from "@/theme/useThemeStore";
 import { useCurrencyStore } from "@/state/useCurrencyStore";
 import { formatDate, formatKm, formatMoney } from "@/utils/format";
 import { QuickAddSheet } from "./QuickAddSheet";
+import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { ServiceLogEntry } from "@/types/models";
 
 export function ServiceTab() {
@@ -77,12 +78,12 @@ export function ServiceTab() {
           </Pressable>
         )}
       />
-      <Pressable
+      <AnimatedPressable
         style={[styles.addButton, { bottom: spacing.md + insets.bottom }]}
         onPress={openAdd}
       >
         <Text style={styles.addButtonText}>+ Log a service</Text>
-      </Pressable>
+      </AnimatedPressable>
       <QuickAddSheet
         kind="service"
         visible={sheetOpen}

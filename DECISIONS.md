@@ -150,6 +150,20 @@ by disabling the button and guarding `handleSave` re-entry while a save
 is in flight — applied the same fix to QuickAddSheet (fuel/service/
 charging entries) since it had the identical gap.
 
+## Micro-interactions: haptics + press/scale, kept restrained
+
+Added `expo-haptics` (a native module — needs an `eas build`, not just
+OTA, same as the earlier photo-picker/notifications additions) and a
+shared `AnimatedPressable` (scale to ~0.96 on press-in, 100-150ms, light
+haptic tap) applied to primary buttons, the vehicle card, and the
+"+Log..." actions — not to every touchable in the app, to stay
+consistent with the existing design brief's "restrained micro-
+interactions... avoid bouncy animations, excessive scaling, decorative
+motion." "Mark done" gets a small completion state (checkmark fade/scale
+in, success haptic, auto-dismiss ~900ms) instead of just closing
+instantly — a fade+scale from 0.85→1, not a spring/bounce, for the same
+reason.
+
 ## "Mark done" advances the due date, it's not a checkbox
 
 Marking a renewal/PMS done opens a small sheet asking for the *new*

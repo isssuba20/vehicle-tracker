@@ -16,6 +16,7 @@ import { useThemeStore } from "@/theme/useThemeStore";
 import { useCurrencyStore } from "@/state/useCurrencyStore";
 import { TextField } from "@/components/TextField";
 import { DateField } from "@/components/DateField";
+import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { useAppStore } from "@/state/store";
 import { useVehicle } from "./VehicleContext";
 import { FuelLogEntry, ServiceLogEntry, ChargingLogEntry } from "@/types/models";
@@ -281,13 +282,13 @@ export function QuickAddSheet({
               <Pressable style={[styles.button, styles.cancelButton]} onPress={close}>
                 <Text style={styles.cancelText}>Cancel</Text>
               </Pressable>
-              <Pressable
-                style={[styles.button, styles.saveButton, submitting && styles.saveButtonDisabled]}
+              <AnimatedPressable
+                style={[styles.button, styles.saveButton]}
                 onPress={handleSave}
                 disabled={submitting}
               >
                 <Text style={styles.saveText}>{submitting ? "Saving…" : "Save"}</Text>
-              </Pressable>
+              </AnimatedPressable>
             </View>
 
             {isEdit && (
@@ -360,9 +361,6 @@ const makeStyles = (colors: ThemeColors) => StyleSheet.create({
   },
   saveButton: {
     backgroundColor: colors.accent,
-  },
-  saveButtonDisabled: {
-    opacity: 0.6,
   },
   saveText: {
     fontFamily: fonts.bodySemiBold,

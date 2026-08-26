@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, Pressable, StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { useAppStore } from "@/state/store";
@@ -107,7 +108,7 @@ export function OnboardingScreen() {
           />
         )}
 
-        <Pressable style={styles.primaryButton} onPress={handleSubmit} disabled={submitting}>
+        <AnimatedPressable style={styles.primaryButton} onPress={handleSubmit} disabled={submitting}>
           {submitting ? (
             <ActivityIndicator color={colors.onAccent} />
           ) : (
@@ -115,7 +116,7 @@ export function OnboardingScreen() {
               {mode === "create" ? "Create household" : "Join household"}
             </Text>
           )}
-        </Pressable>
+        </AnimatedPressable>
 
         <Pressable style={styles.signOutButton} onPress={signOut}>
           <Text style={styles.signOutText}>Sign out</Text>

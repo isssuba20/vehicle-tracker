@@ -5,6 +5,7 @@ import { TabScreenProps } from "@/navigation/types";
 import { useAppStore } from "@/state/store";
 import { VehicleCard } from "@/components/VehicleCard";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { getEfficiencyDisplay, EfficiencyDisplay } from "@/utils/vehicleEfficiencyDisplay";
@@ -69,12 +70,12 @@ export function DashboardScreen({ navigation }: Props) {
           />
         )}
       />
-      <Pressable
+      <AnimatedPressable
         style={[styles.addButton, { bottom: spacing.md + insets.bottom }]}
         onPress={() => navigation.navigate("AddEditVehicle", {})}
       >
         <Text style={styles.addButtonText}>+ Add a vehicle</Text>
-      </Pressable>
+      </AnimatedPressable>
     </View>
   );
 }

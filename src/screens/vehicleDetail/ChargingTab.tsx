@@ -10,6 +10,7 @@ import { useCurrencyStore } from "@/state/useCurrencyStore";
 import { formatDate, formatKm, formatKmPerKwh, formatMoney } from "@/utils/format";
 import { withComputedChargingEfficiency } from "@/utils/chargingEfficiency";
 import { QuickAddSheet } from "./QuickAddSheet";
+import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { ChargingLogEntry } from "@/types/models";
 
 export function ChargingTab() {
@@ -82,12 +83,12 @@ export function ChargingTab() {
           </Pressable>
         )}
       />
-      <Pressable
+      <AnimatedPressable
         style={[styles.addButton, { bottom: spacing.md + insets.bottom }]}
         onPress={openAdd}
       >
         <Text style={styles.addButtonText}>+ Log a charge</Text>
-      </Pressable>
+      </AnimatedPressable>
       <QuickAddSheet
         kind="charging"
         visible={sheetOpen}
