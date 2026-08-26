@@ -118,7 +118,8 @@ export function QuickAddSheet({
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={close}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "android" ? 24 : 0}
         style={styles.backdrop}
       >
         <Pressable style={styles.backdropTouchable} onPress={close} />
