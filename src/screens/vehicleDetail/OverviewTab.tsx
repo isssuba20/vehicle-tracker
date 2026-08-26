@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, Pressable } from "react-native";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { useVehicle } from "./VehicleContext";
 import { useAppStore } from "@/state/store";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
@@ -10,21 +10,14 @@ import { StatusRow } from "@/components/StatusRow";
 import { getEfficiencyDisplay } from "@/utils/vehicleEfficiencyDisplay";
 import { useCurrencyStore } from "@/state/useCurrencyStore";
 import { MarkDoneSheet, RenewalKind } from "./MarkDoneSheet";
-import { PredictedMaintenanceCard } from "@/components/PredictedMaintenanceCard";
-import { getMaintenancePredictions } from "@/services/maintenancePrediction";
-import { OwnershipCostCard } from "@/components/OwnershipCostCard";
-import { getAllExpenses } from "@/services/fleetAnalytics";
-import { getVehicleOwnershipCost } from "@/services/ownershipCost";
-import { TripCostSheet } from "./TripCostSheet";
 
 export function OverviewTab() {
   const vehicle = useVehicle();
-  const { fuelByVehicle, chargingByVehicle, serviceByVehicle, loadVehicleDetail } = useAppStore();
+  const { fuelByVehicle, chargingByVehicle, loadVehicleDetail } = useAppStore();
   const colors = useThemeStore((s) => s.colors);
   const currencyCode = useCurrencyStore((s) => s.code);
   const styles = makeStyles(colors);
   const [markDoneKind, setMarkDoneKind] = useState<RenewalKind | null>(null);
-  const [tripCostVisible, setTripCostVisible] = useState(false);
 
   useEffect(() => {
     loadVehicleDetail(vehicle.id);
@@ -45,25 +38,9 @@ export function OverviewTab() {
     ? `or ${formatKm(vehicle.nextPmsDueKm)}, whichever comes first`
     : undefined;
 
-  const serviceEntries = serviceByVehicle[vehicle.id] ?? [];
-  const predictions = useMemo(
-    () => getMaintenancePredictions(serviceEntries, vehicle.currentOdometerKm),
-    [serviceEntries, vehicle.currentOdometerKm]
-  );
-
-  const ownershipCost = useMemo(() => {
-    const expenses = getAllExpenses(
-      [vehicle],
-      { [vehicle.id]: fuelByVehicle[vehicle.id] ?? [] },
-      { [vehicle.id]: serviceEntries },
-      { [vehicle.id]: chargingByVehicle[vehicle.id] ?? [] }
-    );
-    return getVehicleOwnershipCost(vehicle, expenses);
-  }, [vehicle, fuelByVehicle, serviceEntries, chargingByVehicle]);
-
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: spacing.xl }}>
-      <View style={styles.plainSection}>
+      <View style={[styles.plainSection, styles.firstSection]}>
         <Text style={styles.sectionTitle}>Renewals & Maintenance</Text>
         <StatusRow
           label="Registration"
@@ -95,30 +72,8 @@ export function OverviewTab() {
         />
       )}
 
-      {tripCostVisible && (
-        <TripCostSheet
-          visible={tripCostVisible}
-          vehicle={vehicle}
-          fuelEntries={fuelByVehicle[vehicle.id] ?? []}
-          chargingEntries={chargingByVehicle[vehicle.id] ?? []}
-          onClose={() => setTripCostVisible(false)}
-        />
-      )}
-
-      {serviceEntries.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Predicted maintenance</Text>
-          <PredictedMaintenanceCard predictions={predictions} />
-        </View>
-      )}
-
       <View style={styles.card}>
-        <View style={styles.cardHeaderRow}>
-          <Text style={styles.sectionTitle}>At a glance</Text>
-          <Pressable onPress={() => setTripCostVisible(true)} hitSlop={8}>
-            <Text style={styles.tripCostLink}>Trip cost calculator</Text>
-          </Pressable>
-        </View>
+        <Text style={styles.sectionTitle}>At a glance</Text>
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
             <Text style={styles.statLabel}>Odometer</Text>
@@ -139,11 +94,6 @@ export function OverviewTab() {
             <Text style={styles.statValue}>{formatMoney(vehicle.purchasePrice, currencyCode)}</Text>
           </View>
         </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Ownership cost</Text>
-        <OwnershipCostCard cost={ownershipCost} currencyCode={currencyCode} />
       </View>
 
       <View style={styles.plainSection}>
@@ -207,9 +157,6 @@ const makeStyles = (colors: ThemeColors) =>
       backgroundColor: colors.background,
       paddingHorizontal: spacing.md,
     },
-    section: {
-      marginTop: spacing.lg,
-    },
     card: {
       marginTop: spacing.lg,
       backgroundColor: colors.surface,
@@ -224,22 +171,16 @@ const makeStyles = (colors: ThemeColors) =>
       borderTopWidth: StyleSheet.hairlineWidth,
       borderTopColor: colors.border,
     },
+    firstSection: {
+      marginTop: spacing.md,
+      paddingTop: 0,
+      borderTopWidth: 0,
+    },
     sectionTitle: {
       fontFamily: fonts.display,
       fontSize: 16,
       color: colors.textPrimary,
       marginBottom: spacing.sm,
-    },
-    cardHeaderRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      marginBottom: spacing.sm,
-    },
-    tripCostLink: {
-      fontFamily: fonts.bodySemiBold,
-      fontSize: 12,
-      color: colors.accent,
     },
     statsGrid: {
       flexDirection: "row",

@@ -356,6 +356,25 @@ refuel to a specific trip. This is a same-session estimate, labeled
 history yet") instead of guessing when a vehicle has no fuel/charging
 entries at all.
 
+## Vehicle Detail split: Overview vs. Insights tab
+
+Overview had accumulated Renewals & Maintenance, Predicted maintenance,
+At a glance, Ownership cost, the trip cost calculator link, Details,
+and EV details in one scroll — too much in a single screen. Split it:
+
+- **Overview** keeps the vehicle's plain facts: Renewals & Maintenance
+  (with Mark done), At a glance stats, Details, EV details.
+- **Insights** (new tab) holds everything derived/predicted/estimated:
+  Predicted maintenance, Ownership cost, and the trip cost calculator —
+  grouped together since all three are computed, not stored, and share
+  the same "estimate, not a fact" framing.
+
+`Vehicle Detail` is now 5 tabs (Overview, Insights, Service,
+Fuel-or-Charging, Timeline), so `tabBarScrollEnabled: true` was added to
+the top tab bar to keep labels legible instead of squeezing 5 fixed-width
+tabs onto one row — same navigator, no new dependency. Pure UI
+reorganization: no data, store, or route-param changes, no schema impact.
+
 ## Card usage in Vehicle Detail → Overview tab
 
 The brief says not to wrap every section in a card. Kept "At a glance" (the

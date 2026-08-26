@@ -13,6 +13,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { buildVehicleReportText } from "@/services/vehicleReport";
 import { VehicleProvider } from "./vehicleDetail/VehicleContext";
 import { OverviewTab } from "./vehicleDetail/OverviewTab";
+import { InsightsTab } from "./vehicleDetail/InsightsTab";
 import { ServiceTab } from "./vehicleDetail/ServiceTab";
 import { FuelTab } from "./vehicleDetail/FuelTab";
 import { ChargingTab } from "./vehicleDetail/ChargingTab";
@@ -94,9 +95,13 @@ export function VehicleDetailScreen({ route, navigation }: Props) {
           tabBarIndicatorStyle: { backgroundColor: colors.accent },
           tabBarLabelStyle: { fontFamily: fonts.bodySemiBold, fontSize: 13, textTransform: "none" },
           tabBarStyle: { backgroundColor: colors.background, elevation: 0, shadowOpacity: 0 },
+          tabBarScrollEnabled: true,
+          tabBarItemStyle: { width: "auto" },
+          tabBarContentContainerStyle: { paddingHorizontal: spacing.sm },
         }}
       >
         <Tab.Screen name="Overview" component={OverviewTab} />
+        <Tab.Screen name="Insights" component={InsightsTab} />
         <Tab.Screen name="Service" component={ServiceTab} />
         {vehicle.fuelType === "electric" ? (
           <Tab.Screen name="Charging" component={ChargingTab} />
