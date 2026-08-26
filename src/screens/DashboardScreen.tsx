@@ -12,15 +12,11 @@ import { getEfficiencyDisplay, EfficiencyDisplay } from "@/utils/vehicleEfficien
 type Props = TabScreenProps<"Dashboard">;
 
 export function DashboardScreen({ navigation }: Props) {
-  const { ready, vehicles, init, fuelByVehicle, chargingByVehicle, loadVehicleDetail, updateVehicle } =
+  const { ready, vehicles, fuelByVehicle, chargingByVehicle, loadVehicleDetail, updateVehicle } =
     useAppStore();
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
   const insets = useSafeAreaInsets();
-
-  useEffect(() => {
-    init();
-  }, []);
 
   useEffect(() => {
     // Prime fuel/charging history for each vehicle so the dashboard can

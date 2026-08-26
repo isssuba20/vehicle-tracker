@@ -85,6 +85,38 @@ gold dark enough to lose the "warm metallic gold" identity — but it's worth
 a look on a real light-mode screen. If it reads poorly, the fix is a slightly
 darker `accent` in `lightColors` (theme.ts) with no other code changes.
 
+## Backend: Supabase, wired as an opt-in swap
+
+Added a full `SupabaseRepository` (Postgres schema in `supabase/schema.sql`,
+Row Level Security policies scoping every table to the caller's
+household) behind the existing `Repository` interface, plus real auth
+(sign up/sign in), an onboarding flow (create a household or redeem an
+invite code), and real invite redemption to replace the local stub.
+
+- `createRepository()` picks Supabase only once
+  `EXPO_PUBLIC_SUPABASE_URL`/`EXPO_PUBLIC_SUPABASE_ANON_KEY` are set;
+  otherwise it falls back to the original local-only SQLite path with the
+  mock-data seed. This means today's push is safe to ship before the
+  Supabase project exists — nothing changes for existing installs until
+  those two env vars are added.
+- The anon key is meant to be public (protection is the RLS policies, not
+  secrecy of that key), so `.env` is intended to be committed once filled
+  in — see `.env.example`. Never put the `service_role` key anywhere in
+  the app or repo.
+- Group invite codes remain a shared "capability token": any signed-in
+  user can look up an invite row by code to redeem it (needed since the
+  redeeming user isn't a member yet, so can't pass the normal membership
+  check). The code itself is the secret, same trust model as the
+  original local stub — flagging since it's a deliberate, not accidental,
+  looseness.
+- Role enforcement (owner vs. member permissions) is still not enforced
+  anywhere beyond storing the value — same deferral as the original v1
+  decision above, now just backed by a real table instead of a local one.
+- Vehicle photos are **not** migrated to Supabase Storage in this pass —
+  `photoUri` still points at a local file, so photos won't sync across a
+  household's devices yet. Treating this as a fast-follow rather than
+  blocking the core backend swap on it.
+
 ## Card usage in Vehicle Detail → Overview tab
 
 The brief says not to wrap every section in a card. Kept "At a glance" (the

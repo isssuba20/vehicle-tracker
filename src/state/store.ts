@@ -1,11 +1,14 @@
 import { create } from "zustand";
+import uuid from "react-native-uuid";
 import { createRepository } from "@/data";
+import { isSupabaseConfigured } from "@/data/supabase/client";
 import { seedIfEmpty, CURRENT_USER_ID, HOUSEHOLD_GROUP_ID } from "@/data/seed";
 import {
   Vehicle,
   ServiceLogEntry,
   FuelLogEntry,
   ChargingLogEntry,
+  Group,
   GroupMember,
 } from "@/types/models";
 
@@ -21,10 +24,16 @@ interface AppState {
   chargingByVehicle: Record<string, ChargingLogEntry[]>;
   members: GroupMember[];
 
-  init: () => Promise<void>;
+  /** userId is required once a Supabase backend is configured; local SQLite mode ignores it. */
+  init: (userId?: string) => Promise<void>;
+  reset: () => void;
+  refreshGroups: () => Promise<void>;
   refreshVehicles: () => Promise<void>;
   loadVehicleDetail: (vehicleId: string) => Promise<void>;
   loadMembers: (groupId: string) => Promise<void>;
+
+  createHousehold: (name: string, displayName: string) => Promise<void>;
+  joinHousehold: (code: string, displayName: string) => Promise<void>;
 
   addVehicle: (vehicle: Vehicle) => Promise<void>;
   updateVehicle: (vehicle: Vehicle) => Promise<void>;
@@ -37,22 +46,40 @@ interface AppState {
   inviteMember: (groupId: string, displayName: string) => Promise<string>;
 }
 
+const emptyState = {
+  vehicles: [] as Vehicle[],
+  serviceByVehicle: {} as Record<string, ServiceLogEntry[]>,
+  fuelByVehicle: {} as Record<string, FuelLogEntry[]>,
+  chargingByVehicle: {} as Record<string, ChargingLogEntry[]>,
+  members: [] as GroupMember[],
+};
+
 export const useAppStore = create<AppState>((set, get) => ({
   ready: false,
-  currentUserId: CURRENT_USER_ID,
-  groupIds: [HOUSEHOLD_GROUP_ID],
-  vehicles: [],
-  serviceByVehicle: {},
-  fuelByVehicle: {},
-  chargingByVehicle: {},
-  members: [],
+  currentUserId: isSupabaseConfigured ? "" : CURRENT_USER_ID,
+  groupIds: isSupabaseConfigured ? [] : [HOUSEHOLD_GROUP_ID],
+  ...emptyState,
 
-  init: async () => {
-    await seedIfEmpty(repo);
-    const groups = await repo.getGroups(CURRENT_USER_ID);
-    const groupIds = groups.map((g) => g.id);
-    set({ groupIds, ready: true });
+  init: async (userId?: string) => {
+    if (isSupabaseConfigured) {
+      if (!userId) throw new Error("init() requires userId when Supabase is configured");
+      set({ currentUserId: userId });
+    } else {
+      await seedIfEmpty(repo);
+    }
+    await get().refreshGroups();
+    set({ ready: true });
     await get().refreshVehicles();
+  },
+
+  /** Clears app-data state on sign-out so the next signed-in user never sees a stale cache. */
+  reset: () => {
+    set({ ready: false, currentUserId: "", groupIds: [], ...emptyState });
+  },
+
+  refreshGroups: async () => {
+    const groups = await repo.getGroups(get().currentUserId);
+    set({ groupIds: groups.map((g) => g.id) });
   },
 
   refreshVehicles: async () => {
@@ -76,6 +103,26 @@ export const useAppStore = create<AppState>((set, get) => ({
   loadMembers: async (groupId: string) => {
     const members = await repo.getGroupMembers(groupId);
     set({ members });
+  },
+
+  createHousehold: async (name: string, displayName: string) => {
+    const group: Group = { id: uuid.v4() as string, name };
+    const owner: GroupMember = {
+      groupId: group.id,
+      userId: get().currentUserId,
+      role: "owner",
+      displayName,
+    };
+    await repo.createGroup(group, owner);
+    await get().refreshGroups();
+    await get().refreshVehicles();
+  },
+
+  joinHousehold: async (code: string, displayName: string) => {
+    const { redeemInvite } = await import("@/data/supabase/invites");
+    await redeemInvite(code, get().currentUserId, displayName);
+    await get().refreshGroups();
+    await get().refreshVehicles();
   },
 
   addVehicle: async (vehicle: Vehicle) => {
@@ -112,9 +159,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   inviteMember: async (groupId: string, displayName: string) => {
-    // v1 stub: no backend, so "inviting" just generates a shareable code
-    // and immediately adds a placeholder member locally. Once a real
-    // backend exists this becomes an actual invite flow (see DECISIONS.md).
+    if (isSupabaseConfigured) {
+      const { createInvite } = await import("@/data/supabase/invites");
+      return createInvite(groupId, get().currentUserId);
+    }
+    // Local SQLite mode has no real invite mechanism: generate a code and
+    // immediately add a placeholder member (see DECISIONS.md).
     const code = Math.random().toString(36).slice(2, 8).toUpperCase();
     const member: GroupMember = {
       groupId,

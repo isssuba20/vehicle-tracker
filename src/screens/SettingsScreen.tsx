@@ -3,6 +3,8 @@ import { View, Text, FlatList, Pressable, StyleSheet, Alert } from "react-native
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Updates from "expo-updates";
 import { useAppStore } from "@/state/store";
+import { useAuthStore } from "@/state/authStore";
+import { isSupabaseConfigured } from "@/data/supabase/client";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { TextField } from "@/components/TextField";
@@ -23,6 +25,7 @@ function buildInfoLabel(): string {
 
 export function SettingsScreen() {
   const { groupIds, members, loadMembers, inviteMember, currentUserId } = useAppStore();
+  const signOut = useAuthStore((s) => s.signOut);
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
   const insets = useSafeAreaInsets();
@@ -36,7 +39,7 @@ export function SettingsScreen() {
 
   async function handleInvite() {
     if (!groupId) return;
-    if (!inviteName.trim()) {
+    if (!isSupabaseConfigured && !inviteName.trim()) {
       Alert.alert("Enter a name", "Give the person you're inviting a name so you can recognize them in the member list.");
       return;
     }
@@ -75,15 +78,18 @@ export function SettingsScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Invite a member</Text>
         <Text style={styles.sectionBody}>
-          There's no backend yet, so this generates a shareable code you can send
-          them yourself. When a real invite system ships, this becomes a proper link.
+          {isSupabaseConfigured
+            ? "Generates a code that adds them to this household as soon as they sign up and enter it — send it to them yourself."
+            : "There's no backend yet, so this generates a shareable code you can send them yourself. When a real invite system ships, this becomes a proper link."}
         </Text>
-        <TextField
-          label="Name"
-          placeholder="Who are you inviting?"
-          value={inviteName}
-          onChangeText={setInviteName}
-        />
+        {!isSupabaseConfigured && (
+          <TextField
+            label="Name"
+            placeholder="Who are you inviting?"
+            value={inviteName}
+            onChangeText={setInviteName}
+          />
+        )}
         <Pressable style={styles.inviteButton} onPress={handleInvite}>
           <Text style={styles.inviteButtonText}>Generate invite code</Text>
         </Pressable>
@@ -94,6 +100,12 @@ export function SettingsScreen() {
           </View>
         )}
       </View>
+
+      {isSupabaseConfigured && (
+        <Pressable style={styles.signOutButton} onPress={signOut}>
+          <Text style={styles.signOutText}>Sign out</Text>
+        </Pressable>
+      )}
 
       <Text style={styles.buildInfo}>{buildInfoLabel()}</Text>
     </View>
@@ -192,6 +204,15 @@ const makeStyles = (colors: ThemeColors) =>
       letterSpacing: 4,
       color: ON_OK_TEXT,
       marginTop: 4,
+    },
+    signOutButton: {
+      alignItems: "center",
+      paddingVertical: spacing.sm,
+    },
+    signOutText: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: colors.overdueBright,
     },
     buildInfo: {
       fontFamily: fonts.mono,

@@ -18,7 +18,7 @@ import { useFonts as useIconFont } from "expo-font";
 import { Ionicons } from "@expo/vector-icons";
 import { View, ActivityIndicator } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { RootNavigator } from "@/navigation/RootNavigator";
+import { AppGate } from "@/navigation/AppGate";
 import { useThemeStore } from "@/theme/useThemeStore";
 
 export default function App() {
@@ -60,7 +60,7 @@ export default function App() {
       <SafeAreaProvider>
         <NavigationContainer theme={navTheme}>
           <StatusBar style={mode === "dark" ? "light" : "dark"} />
-          <RootNavigator />
+          <AppGate />
         </NavigationContainer>
       </SafeAreaProvider>
     </GestureHandlerRootView>
