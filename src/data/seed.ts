@@ -53,6 +53,7 @@ export async function seedIfEmpty(repo: Repository): Promise<void> {
       purchaseDate: "2021-03-15",
       purchasePrice: 1850000,
       currentOdometerKm: 42350,
+      fuelType: "gas",
       registrationExpiry: isoDaysFromNow(-5), // overdue
       insuranceExpiry: isoDaysFromNow(20), // due soon
       nextPmsDueDate: isoDaysFromNow(45),
@@ -71,6 +72,7 @@ export async function seedIfEmpty(repo: Repository): Promise<void> {
       purchaseDate: "2023-06-01",
       purchasePrice: 118000,
       currentOdometerKm: 8120,
+      fuelType: "gas",
       registrationExpiry: isoDaysFromNow(120),
       insuranceExpiry: isoDaysFromNow(200),
       nextPmsDueDate: isoDaysFromNow(10),
@@ -89,6 +91,7 @@ export async function seedIfEmpty(repo: Repository): Promise<void> {
       purchaseDate: "2019-11-20",
       purchasePrice: 1150000,
       currentOdometerKm: 61200,
+      fuelType: "gas",
       registrationExpiry: isoDaysFromNow(300),
       insuranceExpiry: isoDaysFromNow(300),
       nextPmsDueDate: isoDaysFromNow(90),

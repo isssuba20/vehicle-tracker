@@ -2,6 +2,7 @@ import {
   Vehicle,
   ServiceLogEntry,
   FuelLogEntry,
+  ChargingLogEntry,
   Group,
   GroupMember,
 } from "@/types/models";
@@ -29,6 +30,11 @@ export interface Repository {
   getFuelEntries(vehicleId: string): Promise<FuelLogEntry[]>;
   addFuelEntry(entry: FuelLogEntry): Promise<void>;
   deleteFuelEntry(id: string): Promise<void>;
+
+  // Charging log (electric/hybrid vehicles)
+  getChargingEntries(vehicleId: string): Promise<ChargingLogEntry[]>;
+  addChargingEntry(entry: ChargingLogEntry): Promise<void>;
+  deleteChargingEntry(id: string): Promise<void>;
 
   // Groups / sharing
   getGroups(userId: string): Promise<Group[]>;

@@ -8,7 +8,7 @@ import { DateField } from "@/components/DateField";
 import { useAppStore } from "@/state/store";
 import { useVehicle } from "./VehicleContext";
 
-type Kind = "fuel" | "service";
+type Kind = "fuel" | "service" | "charging";
 
 export function QuickAddSheet({
   kind,
@@ -20,7 +20,7 @@ export function QuickAddSheet({
   onClose: () => void;
 }) {
   const vehicle = useVehicle();
-  const { addFuelEntry, addServiceEntry } = useAppStore();
+  const { addFuelEntry, addServiceEntry, addChargingEntry } = useAppStore();
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
 
@@ -29,6 +29,8 @@ export function QuickAddSheet({
   const [cost, setCost] = useState("");
   // fuel-only
   const [liters, setLiters] = useState("");
+  // charging-only
+  const [kwh, setKwh] = useState("");
   // service-only
   const [type, setType] = useState("");
   const [shop, setShop] = useState("");
@@ -41,6 +43,7 @@ export function QuickAddSheet({
     setOdometerKm(String(vehicle.currentOdometerKm));
     setCost("");
     setLiters("");
+    setKwh("");
     setType("");
     setShop("");
     setNotes("");
@@ -79,6 +82,20 @@ export function QuickAddSheet({
         cost: costNum,
         odometerKm: odo,
       });
+    } else if (kind === "charging") {
+      const kwhNum = Number(kwh);
+      if (!kwh || Number.isNaN(kwhNum) || kwhNum <= 0) {
+        setError("Enter a valid amount of energy (kWh).");
+        return;
+      }
+      await addChargingEntry({
+        id: uuid.v4() as string,
+        vehicleId: vehicle.id,
+        date,
+        kwh: kwhNum,
+        cost: costNum,
+        odometerKm: odo,
+      });
     } else {
       if (!type.trim()) {
         setError("Enter a service type, e.g. Oil change.");
@@ -107,7 +124,9 @@ export function QuickAddSheet({
         <Pressable style={styles.backdropTouchable} onPress={close} />
         <View style={styles.sheet}>
           <View style={styles.handle} />
-          <Text style={styles.title}>{kind === "fuel" ? "Log fuel" : "Log a service"}</Text>
+          <Text style={styles.title}>
+            {kind === "fuel" ? "Log fuel" : kind === "charging" ? "Log a charge" : "Log a service"}
+          </Text>
 
           <DateField label="Date" valueIso={date} onChange={setDate} />
 
@@ -127,6 +146,16 @@ export function QuickAddSheet({
               keyboardType="decimal-pad"
               value={liters}
               onChangeText={setLiters}
+            />
+          )}
+
+          {kind === "charging" && (
+            <TextField
+              label="Energy added (kWh)"
+              placeholder="0.0"
+              keyboardType="decimal-pad"
+              value={kwh}
+              onChangeText={setKwh}
             />
           )}
 

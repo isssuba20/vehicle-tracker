@@ -5,6 +5,7 @@ import {
   Vehicle,
   ServiceLogEntry,
   FuelLogEntry,
+  ChargingLogEntry,
   Group,
   GroupMember,
 } from "@/types/models";
@@ -45,9 +46,10 @@ export class SqliteRepository implements Repository {
     await db.runAsync(
       `INSERT INTO vehicles
         (id, groupId, name, make, model, year, plateNumber, vin, color,
-         purchaseDate, purchasePrice, currentOdometerKm, photoUri,
+         purchaseDate, purchasePrice, currentOdometerKm, photoUri, fuelType,
+         batteryCapacityKwh, estimatedRangeKm, chargingPortType, homeChargingNotes,
          registrationExpiry, insuranceExpiry, nextPmsDueDate, nextPmsDueKm)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [
         v.id,
         v.groupId,
@@ -62,6 +64,11 @@ export class SqliteRepository implements Repository {
         v.purchasePrice,
         v.currentOdometerKm,
         v.photoUri ?? null,
+        v.fuelType,
+        v.batteryCapacityKwh ?? null,
+        v.estimatedRangeKm ?? null,
+        v.chargingPortType ?? null,
+        v.homeChargingNotes ?? null,
         v.registrationExpiry,
         v.insuranceExpiry,
         v.nextPmsDueDate,
@@ -75,7 +82,8 @@ export class SqliteRepository implements Repository {
     await db.runAsync(
       `UPDATE vehicles SET
         groupId=?, name=?, make=?, model=?, year=?, plateNumber=?, vin=?, color=?,
-        purchaseDate=?, purchasePrice=?, currentOdometerKm=?, photoUri=?,
+        purchaseDate=?, purchasePrice=?, currentOdometerKm=?, photoUri=?, fuelType=?,
+        batteryCapacityKwh=?, estimatedRangeKm=?, chargingPortType=?, homeChargingNotes=?,
         registrationExpiry=?, insuranceExpiry=?, nextPmsDueDate=?, nextPmsDueKm=?
        WHERE id=?`,
       [
@@ -91,6 +99,11 @@ export class SqliteRepository implements Repository {
         v.purchasePrice,
         v.currentOdometerKm,
         v.photoUri ?? null,
+        v.fuelType,
+        v.batteryCapacityKwh ?? null,
+        v.estimatedRangeKm ?? null,
+        v.chargingPortType ?? null,
+        v.homeChargingNotes ?? null,
         v.registrationExpiry,
         v.insuranceExpiry,
         v.nextPmsDueDate,
@@ -105,6 +118,7 @@ export class SqliteRepository implements Repository {
     await db.runAsync(`DELETE FROM vehicles WHERE id = ?`, [id]);
     await db.runAsync(`DELETE FROM service_entries WHERE vehicleId = ?`, [id]);
     await db.runAsync(`DELETE FROM fuel_entries WHERE vehicleId = ?`, [id]);
+    await db.runAsync(`DELETE FROM charging_entries WHERE vehicleId = ?`, [id]);
   }
 
   async getServiceEntries(vehicleId: string): Promise<ServiceLogEntry[]> {
@@ -158,6 +172,32 @@ export class SqliteRepository implements Repository {
   async deleteFuelEntry(id: string): Promise<void> {
     const db = await this.db();
     await db.runAsync(`DELETE FROM fuel_entries WHERE id = ?`, [id]);
+  }
+
+  async getChargingEntries(vehicleId: string): Promise<ChargingLogEntry[]> {
+    const db = await this.db();
+    return db.getAllAsync<ChargingLogEntry>(
+      `SELECT * FROM charging_entries WHERE vehicleId = ? ORDER BY date DESC`,
+      [vehicleId]
+    );
+  }
+
+  async addChargingEntry(e: ChargingLogEntry): Promise<void> {
+    const db = await this.db();
+    await db.runAsync(
+      `INSERT INTO charging_entries (id, vehicleId, date, kwh, cost, odometerKm)
+       VALUES (?,?,?,?,?,?)`,
+      [e.id, e.vehicleId, e.date, e.kwh, e.cost, e.odometerKm]
+    );
+    await db.runAsync(
+      `UPDATE vehicles SET currentOdometerKm = MAX(currentOdometerKm, ?) WHERE id = ?`,
+      [e.odometerKm, e.vehicleId]
+    );
+  }
+
+  async deleteChargingEntry(id: string): Promise<void> {
+    const db = await this.db();
+    await db.runAsync(`DELETE FROM charging_entries WHERE id = ?`, [id]);
   }
 
   async getGroups(userId: string): Promise<Group[]> {

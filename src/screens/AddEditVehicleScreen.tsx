@@ -9,11 +9,17 @@ import { useThemeStore } from "@/theme/useThemeStore";
 import { TextField } from "@/components/TextField";
 import { DateField } from "@/components/DateField";
 import { PhotoPicker } from "@/components/PhotoPicker";
-import { Vehicle } from "@/types/models";
+import { Vehicle, FuelType } from "@/types/models";
 
 type Props = NativeStackScreenProps<RootStackParamList, "AddEditVehicle">;
 
 const TODAY = new Date().toISOString().slice(0, 10);
+
+const FUEL_TYPE_OPTIONS: { value: FuelType; label: string }[] = [
+  { value: "gas", label: "Gas" },
+  { value: "hybrid", label: "Hybrid" },
+  { value: "electric", label: "Electric" },
+];
 
 export function AddEditVehicleScreen({ route, navigation }: Props) {
   const { vehicleId } = route.params;
@@ -31,6 +37,7 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
   const [plateNumber, setPlateNumber] = useState(existing?.plateNumber ?? "");
   const [vin, setVin] = useState(existing?.vin ?? "");
   const [color, setColor] = useState(existing?.color ?? "");
+  const [fuelType, setFuelType] = useState<FuelType>(existing?.fuelType ?? "gas");
   const [purchaseDate, setPurchaseDate] = useState(existing?.purchaseDate ?? TODAY);
   const [purchasePrice, setPurchasePrice] = useState(existing ? String(existing.purchasePrice) : "");
   const [currentOdometerKm, setCurrentOdometerKm] = useState(
@@ -43,7 +50,18 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
     existing?.nextPmsDueKm != null ? String(existing.nextPmsDueKm) : ""
   );
 
+  const [batteryCapacityKwh, setBatteryCapacityKwh] = useState(
+    existing?.batteryCapacityKwh != null ? String(existing.batteryCapacityKwh) : ""
+  );
+  const [estimatedRangeKm, setEstimatedRangeKm] = useState(
+    existing?.estimatedRangeKm != null ? String(existing.estimatedRangeKm) : ""
+  );
+  const [chargingPortType, setChargingPortType] = useState(existing?.chargingPortType ?? "");
+  const [homeChargingNotes, setHomeChargingNotes] = useState(existing?.homeChargingNotes ?? "");
+
   const [error, setError] = useState<string | null>(null);
+
+  const showEvDetails = fuelType !== "gas";
 
   async function handleSave() {
     if (!name.trim() || !make.trim() || !model.trim()) {
@@ -70,6 +88,7 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
       vin: vin.trim(),
       color: color.trim(),
       photoUri,
+      fuelType,
       purchaseDate,
       purchasePrice: priceNum,
       currentOdometerKm: odoNum,
@@ -77,6 +96,10 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
       insuranceExpiry,
       nextPmsDueDate,
       nextPmsDueKm: pmsKmNum,
+      batteryCapacityKwh: showEvDetails && batteryCapacityKwh ? Number(batteryCapacityKwh) : undefined,
+      estimatedRangeKm: showEvDetails && estimatedRangeKm ? Number(estimatedRangeKm) : undefined,
+      chargingPortType: showEvDetails ? chargingPortType.trim() || undefined : undefined,
+      homeChargingNotes: showEvDetails ? homeChargingNotes.trim() || undefined : undefined,
     };
 
     if (isEdit) {
@@ -123,6 +146,24 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
       <TextField label="VIN" placeholder="Vehicle identification number" value={vin} onChangeText={setVin} autoCapitalize="characters" />
       <TextField label="Color" placeholder="Silver" value={color} onChangeText={setColor} />
 
+      <View style={styles.fieldGroup}>
+        <Text style={styles.fieldLabel}>Fuel type</Text>
+        <View style={styles.segmented}>
+          {FUEL_TYPE_OPTIONS.map((opt) => {
+            const active = fuelType === opt.value;
+            return (
+              <Pressable
+                key={opt.value}
+                style={[styles.segment, active && styles.segmentActive]}
+                onPress={() => setFuelType(opt.value)}
+              >
+                <Text style={[styles.segmentText, active && styles.segmentTextActive]}>{opt.label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+
       <DateField label="Purchase date" valueIso={purchaseDate} onChange={setPurchaseDate} />
       <TextField label="Purchase price (₱)" placeholder="0" keyboardType="decimal-pad" value={purchasePrice} onChangeText={setPurchasePrice} />
       <TextField label="Current odometer (km)" placeholder="0" keyboardType="number-pad" value={currentOdometerKm} onChangeText={setCurrentOdometerKm} />
@@ -138,6 +179,39 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
         value={nextPmsDueKm}
         onChangeText={setNextPmsDueKm}
       />
+
+      {showEvDetails && (
+        <>
+          <Text style={styles.sectionTitle}>EV details</Text>
+          <TextField
+            label="Battery capacity (kWh)"
+            placeholder="e.g. 60"
+            keyboardType="decimal-pad"
+            value={batteryCapacityKwh}
+            onChangeText={setBatteryCapacityKwh}
+          />
+          <TextField
+            label="Estimated range (km)"
+            placeholder="e.g. 400"
+            keyboardType="number-pad"
+            value={estimatedRangeKm}
+            onChangeText={setEstimatedRangeKm}
+          />
+          <TextField
+            label="Charging port type"
+            placeholder="e.g. Type 2, CCS, CHAdeMO"
+            value={chargingPortType}
+            onChangeText={setChargingPortType}
+          />
+          <TextField
+            label="Home charging notes"
+            placeholder="e.g. Level 2, 7kW garage charger"
+            value={homeChargingNotes}
+            onChangeText={setHomeChargingNotes}
+            multiline
+          />
+        </>
+      )}
 
       {error && <Text style={styles.error}>{error}</Text>}
 
@@ -180,6 +254,40 @@ const makeStyles = (colors: ThemeColors) => StyleSheet.create({
     color: colors.textPrimary,
     marginTop: spacing.sm,
     marginBottom: spacing.sm,
+  },
+  fieldGroup: {
+    marginBottom: spacing.md,
+  },
+  fieldLabel: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.textMuted,
+    marginBottom: 4,
+  },
+  segmented: {
+    flexDirection: "row",
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: "hidden",
+  },
+  segment: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    alignItems: "center",
+    backgroundColor: colors.surface,
+  },
+  segmentActive: {
+    backgroundColor: colors.accent,
+  },
+  segmentText: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 13,
+    color: colors.textMuted,
+  },
+  segmentTextActive: {
+    color: colors.onAccent,
+    fontFamily: fonts.bodySemiBold,
   },
   error: {
     fontFamily: fonts.body,

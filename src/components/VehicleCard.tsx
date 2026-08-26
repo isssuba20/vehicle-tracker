@@ -5,8 +5,8 @@ import { Vehicle } from "@/types/models";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { dateUrgency, pmsUrgency } from "@/utils/urgency";
-import { formatKm, formatKmPerLiter } from "@/utils/format";
-import { LatestEfficiency } from "@/utils/fuelEfficiency";
+import { formatKm } from "@/utils/format";
+import { EfficiencyDisplay } from "@/utils/vehicleEfficiencyDisplay";
 import { usePhotoPicker } from "@/utils/usePhotoPicker";
 import { UrgencyDot } from "./UrgencyDot";
 
@@ -17,7 +17,7 @@ export function VehicleCard({
   onPhotoChange,
 }: {
   vehicle: Vehicle;
-  efficiency: LatestEfficiency;
+  efficiency: EfficiencyDisplay;
   onPress: () => void;
   onPhotoChange: (uri: string | undefined) => void;
 }) {
@@ -58,9 +58,9 @@ export function VehicleCard({
           <Text style={styles.statValue}>{formatKm(vehicle.currentOdometerKm)}</Text>
         </View>
         <View>
-          <Text style={styles.statLabel}>Fuel efficiency</Text>
+          <Text style={styles.statLabel}>{efficiency.label}</Text>
           <Text style={[styles.statValue, efficiency.implausible && styles.statValueWarning]}>
-            {formatKmPerLiter(efficiency.kmPerLiter, efficiency.implausible)}
+            {efficiency.text}
           </Text>
         </View>
       </View>

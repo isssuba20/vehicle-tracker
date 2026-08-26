@@ -5,6 +5,7 @@ import {
   Vehicle,
   ServiceLogEntry,
   FuelLogEntry,
+  ChargingLogEntry,
   GroupMember,
 } from "@/types/models";
 
@@ -17,6 +18,7 @@ interface AppState {
   vehicles: Vehicle[];
   serviceByVehicle: Record<string, ServiceLogEntry[]>;
   fuelByVehicle: Record<string, FuelLogEntry[]>;
+  chargingByVehicle: Record<string, ChargingLogEntry[]>;
   members: GroupMember[];
 
   init: () => Promise<void>;
@@ -30,6 +32,7 @@ interface AppState {
 
   addServiceEntry: (entry: ServiceLogEntry) => Promise<void>;
   addFuelEntry: (entry: FuelLogEntry) => Promise<void>;
+  addChargingEntry: (entry: ChargingLogEntry) => Promise<void>;
 
   inviteMember: (groupId: string, displayName: string) => Promise<string>;
 }
@@ -41,6 +44,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   vehicles: [],
   serviceByVehicle: {},
   fuelByVehicle: {},
+  chargingByVehicle: {},
   members: [],
 
   init: async () => {
@@ -57,13 +61,15 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   loadVehicleDetail: async (vehicleId: string) => {
-    const [service, fuel] = await Promise.all([
+    const [service, fuel, charging] = await Promise.all([
       repo.getServiceEntries(vehicleId),
       repo.getFuelEntries(vehicleId),
+      repo.getChargingEntries(vehicleId),
     ]);
     set((s) => ({
       serviceByVehicle: { ...s.serviceByVehicle, [vehicleId]: service },
       fuelByVehicle: { ...s.fuelByVehicle, [vehicleId]: fuel },
+      chargingByVehicle: { ...s.chargingByVehicle, [vehicleId]: charging },
     }));
   },
 
@@ -95,6 +101,12 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   addFuelEntry: async (entry: FuelLogEntry) => {
     await repo.addFuelEntry(entry);
+    await get().loadVehicleDetail(entry.vehicleId);
+    await get().refreshVehicles();
+  },
+
+  addChargingEntry: async (entry: ChargingLogEntry) => {
+    await repo.addChargingEntry(entry);
     await get().loadVehicleDetail(entry.vehicleId);
     await get().refreshVehicles();
   },

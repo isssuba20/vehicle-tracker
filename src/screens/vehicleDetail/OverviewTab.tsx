@@ -5,13 +5,13 @@ import { useAppStore } from "@/state/store";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { dateUrgency, pmsUrgency } from "@/utils/urgency";
-import { formatDate, formatKm, formatKmPerLiter, formatPeso } from "@/utils/format";
+import { formatDate, formatKm, formatPeso } from "@/utils/format";
 import { StatusRow } from "@/components/StatusRow";
-import { latestKmPerLiter } from "@/utils/fuelEfficiency";
+import { getEfficiencyDisplay } from "@/utils/vehicleEfficiencyDisplay";
 
 export function OverviewTab() {
   const vehicle = useVehicle();
-  const { fuelByVehicle, loadVehicleDetail } = useAppStore();
+  const { fuelByVehicle, chargingByVehicle, loadVehicleDetail } = useAppStore();
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
 
@@ -23,9 +23,11 @@ export function OverviewTab() {
   const insurance = dateUrgency(vehicle.insuranceExpiry);
   const pms = pmsUrgency(vehicle.nextPmsDueDate, vehicle.nextPmsDueKm, vehicle.currentOdometerKm);
 
+  const isHybridOrElectric = vehicle.fuelType !== "gas";
+
   const efficiency = useMemo(
-    () => latestKmPerLiter(fuelByVehicle[vehicle.id] ?? []),
-    [fuelByVehicle, vehicle.id]
+    () => getEfficiencyDisplay(vehicle, fuelByVehicle[vehicle.id] ?? [], chargingByVehicle[vehicle.id] ?? []),
+    [vehicle, fuelByVehicle, chargingByVehicle]
   );
 
   const pmsExtra = vehicle.nextPmsDueKm
@@ -54,9 +56,9 @@ export function OverviewTab() {
             <Text style={styles.statValue}>{formatKm(vehicle.currentOdometerKm)}</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Fuel efficiency</Text>
+            <Text style={styles.statLabel}>{efficiency.label}</Text>
             <Text style={[styles.statValue, efficiency.implausible && styles.statValueWarning]}>
-              {formatKmPerLiter(efficiency.kmPerLiter, efficiency.implausible)}
+              {efficiency.text}
             </Text>
           </View>
           <View style={styles.statCard}>
@@ -76,6 +78,33 @@ export function OverviewTab() {
         <DetailLine styles={styles} label="VIN" value={vehicle.vin} />
         <DetailLine styles={styles} label="Color" value={vehicle.color} />
       </View>
+
+      {isHybridOrElectric && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>EV details</Text>
+          {vehicle.batteryCapacityKwh != null && (
+            <DetailLine styles={styles} label="Battery capacity" value={`${vehicle.batteryCapacityKwh} kWh`} />
+          )}
+          {vehicle.estimatedRangeKm != null && (
+            <DetailLine styles={styles} label="Estimated range" value={formatKm(vehicle.estimatedRangeKm)} />
+          )}
+          {vehicle.chargingPortType && (
+            <DetailLine styles={styles} label="Charging port" value={vehicle.chargingPortType} />
+          )}
+          {vehicle.homeChargingNotes && (
+            <View style={styles.notesBlock}>
+              <Text style={styles.detailLabel}>Home charging</Text>
+              <Text style={styles.notesText}>{vehicle.homeChargingNotes}</Text>
+            </View>
+          )}
+          {vehicle.batteryCapacityKwh == null &&
+            vehicle.estimatedRangeKm == null &&
+            !vehicle.chargingPortType &&
+            !vehicle.homeChargingNotes && (
+              <Text style={styles.emptyDetails}>No EV details added yet — edit this vehicle to fill them in.</Text>
+            )}
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -157,5 +186,20 @@ const makeStyles = (colors: ThemeColors) =>
       fontFamily: fonts.mono,
       fontSize: 14,
       color: colors.textPrimary,
+    },
+    notesBlock: {
+      paddingTop: spacing.sm,
+    },
+    notesText: {
+      fontFamily: fonts.body,
+      fontSize: 14,
+      color: colors.textPrimary,
+      marginTop: 2,
+    },
+    emptyDetails: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textMuted,
+      fontStyle: "italic",
     },
   });

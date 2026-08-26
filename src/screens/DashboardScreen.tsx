@@ -7,12 +7,13 @@ import { VehicleCard } from "@/components/VehicleCard";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
-import { latestKmPerLiter, LatestEfficiency } from "@/utils/fuelEfficiency";
+import { getEfficiencyDisplay, EfficiencyDisplay } from "@/utils/vehicleEfficiencyDisplay";
 
 type Props = TabScreenProps<"Dashboard">;
 
 export function DashboardScreen({ navigation }: Props) {
-  const { ready, vehicles, init, fuelByVehicle, loadVehicleDetail, updateVehicle } = useAppStore();
+  const { ready, vehicles, init, fuelByVehicle, chargingByVehicle, loadVehicleDetail, updateVehicle } =
+    useAppStore();
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
   const insets = useSafeAreaInsets();
@@ -22,18 +23,18 @@ export function DashboardScreen({ navigation }: Props) {
   }, []);
 
   useEffect(() => {
-    // Prime fuel history for each vehicle so the dashboard can show
-    // last-known km/L without waiting for the detail screen.
+    // Prime fuel/charging history for each vehicle so the dashboard can
+    // show last-known efficiency without waiting for the detail screen.
     vehicles.forEach((v) => loadVehicleDetail(v.id));
   }, [vehicles.length]);
 
-  const kmPerLiterByVehicle = useMemo(() => {
-    const map: Record<string, LatestEfficiency> = {};
+  const efficiencyByVehicle = useMemo(() => {
+    const map: Record<string, EfficiencyDisplay> = {};
     for (const v of vehicles) {
-      map[v.id] = latestKmPerLiter(fuelByVehicle[v.id] ?? []);
+      map[v.id] = getEfficiencyDisplay(v, fuelByVehicle[v.id] ?? [], chargingByVehicle[v.id] ?? []);
     }
     return map;
-  }, [vehicles, fuelByVehicle]);
+  }, [vehicles, fuelByVehicle, chargingByVehicle]);
 
   if (!ready) {
     return (
@@ -64,7 +65,9 @@ export function DashboardScreen({ navigation }: Props) {
         renderItem={({ item }) => (
           <VehicleCard
             vehicle={item}
-            efficiency={kmPerLiterByVehicle[item.id] ?? { kmPerLiter: null, implausible: false }}
+            efficiency={
+              efficiencyByVehicle[item.id] ?? { label: "Fuel efficiency", text: "—", implausible: false }
+            }
             onPress={() => navigation.navigate("VehicleDetail", { vehicleId: item.id })}
             onPhotoChange={(photoUri) => updateVehicle({ ...item, photoUri })}
           />

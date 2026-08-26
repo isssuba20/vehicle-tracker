@@ -12,6 +12,8 @@ export interface GroupMember {
   displayName: string;
 }
 
+export type FuelType = "gas" | "hybrid" | "electric";
+
 export interface Vehicle {
   id: string;
   groupId: string;
@@ -26,12 +28,19 @@ export interface Vehicle {
   purchasePrice: number;
   currentOdometerKm: number;
   photoUri?: string;
+  fuelType: FuelType;
 
   // Reminder fields
   registrationExpiry: string; // ISO date
   insuranceExpiry: string; // ISO date
   nextPmsDueDate: string; // ISO date
   nextPmsDueKm?: number;
+
+  // EV details — relevant for "hybrid" and "electric"; gas vehicles leave these unset.
+  batteryCapacityKwh?: number;
+  estimatedRangeKm?: number;
+  chargingPortType?: string;
+  homeChargingNotes?: string;
 }
 
 export interface ServiceLogEntry {
@@ -50,6 +59,15 @@ export interface FuelLogEntry {
   vehicleId: string;
   date: string; // ISO date
   liters: number;
+  cost: number;
+  odometerKm: number;
+}
+
+export interface ChargingLogEntry {
+  id: string;
+  vehicleId: string;
+  date: string; // ISO date
+  kwh: number;
   cost: number;
   odometerKm: number;
 }

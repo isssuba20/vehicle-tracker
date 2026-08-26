@@ -12,6 +12,7 @@ import { VehicleProvider } from "./vehicleDetail/VehicleContext";
 import { OverviewTab } from "./vehicleDetail/OverviewTab";
 import { ServiceTab } from "./vehicleDetail/ServiceTab";
 import { FuelTab } from "./vehicleDetail/FuelTab";
+import { ChargingTab } from "./vehicleDetail/ChargingTab";
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -69,7 +70,11 @@ export function VehicleDetailScreen({ route, navigation }: Props) {
       >
         <Tab.Screen name="Overview" component={OverviewTab} />
         <Tab.Screen name="Service" component={ServiceTab} />
-        <Tab.Screen name="Fuel" component={FuelTab} />
+        {vehicle.fuelType === "electric" ? (
+          <Tab.Screen name="Charging" component={ChargingTab} />
+        ) : (
+          <Tab.Screen name="Fuel" component={FuelTab} />
+        )}
       </Tab.Navigator>
     </VehicleProvider>
   );

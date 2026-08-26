@@ -12,6 +12,12 @@ export function formatKmPerLiter(value: number | null, implausible = false): str
   return `${value.toFixed(1)} km/L`;
 }
 
+export function formatKmPerKwh(value: number | null, implausible = false): string {
+  if (value == null) return "—";
+  if (implausible) return "Check entry";
+  return `${value.toFixed(1)} km/kWh`;
+}
+
 export function formatDate(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleDateString("en-PH", {
