@@ -153,46 +153,58 @@ alter table push_tokens enable row level security;
 
 -- groups: visible to members; anyone signed in can create one (they
 -- immediately self-insert as owner via group_members below).
+drop policy if exists "groups_select_member" on groups;
 create policy "groups_select_member" on groups for select
   using (public.is_group_member(id));
+drop policy if exists "groups_insert_any_authenticated" on groups;
 create policy "groups_insert_any_authenticated" on groups for insert
   with check (auth.uid() is not null);
 
 -- group_members: visible to fellow members; a user may only ever
 -- insert/delete their own membership row (role enforcement beyond that
 -- is deferred, see DECISIONS.md — same as the original local model).
+drop policy if exists "group_members_select_member" on group_members;
 create policy "group_members_select_member" on group_members for select
   using (public.is_group_member("groupId"));
+drop policy if exists "group_members_insert_self" on group_members;
 create policy "group_members_insert_self" on group_members for insert
   with check ("userId" = auth.uid());
+drop policy if exists "group_members_delete_self" on group_members;
 create policy "group_members_delete_self" on group_members for delete
   using ("userId" = auth.uid());
 
 -- group_invites: a member creates one for their own group; the code
 -- itself (random, unguessable) is the shared secret, so any signed-in
 -- user may look a row up by code to redeem it — see DECISIONS.md.
+drop policy if exists "group_invites_select_any_authenticated" on group_invites;
 create policy "group_invites_select_any_authenticated" on group_invites for select
   using (auth.uid() is not null);
+drop policy if exists "group_invites_insert_member" on group_invites;
 create policy "group_invites_insert_member" on group_invites for insert
   with check ("createdBy" = auth.uid() and public.is_group_member("groupId"));
+drop policy if exists "group_invites_redeem_unclaimed" on group_invites;
 create policy "group_invites_redeem_unclaimed" on group_invites for update
   using ("redeemedBy" is null)
   with check ("redeemedBy" = auth.uid());
 
 -- vehicles / service / fuel / charging entries: full access for members
 -- of the owning group, no access otherwise.
+drop policy if exists "vehicles_all_member" on vehicles;
 create policy "vehicles_all_member" on vehicles for all
   using (public.is_group_member("groupId"))
   with check (public.is_group_member("groupId"));
 
+drop policy if exists "service_entries_all_member" on service_entries;
 create policy "service_entries_all_member" on service_entries for all
   using (public.can_access_vehicle("vehicleId"))
   with check (public.can_access_vehicle("vehicleId"));
 
+drop policy if exists "fuel_entries_all_member" on fuel_entries;
 create policy "fuel_entries_all_member" on fuel_entries for all
   using (public.can_access_vehicle("vehicleId"))
   with check (public.can_access_vehicle("vehicleId"));
 
+drop policy if exists "charging_entries_all_member" on charging_entries;
 create policy "charging_entries_all_member" on charging_entries for all
   using (public.can_access_vehicle("vehicleId"))
   with check (public.can_access_vehicle("vehicleId"));
@@ -200,6 +212,7 @@ create policy "charging_entries_all_member" on charging_entries for all
 -- push_tokens: a user manages only their own device tokens. The
 -- daily-reminders Edge Function reads all of them via the service_role
 -- key, which bypasses RLS entirely — it needs no policy here.
+drop policy if exists "push_tokens_all_self" on push_tokens;
 create policy "push_tokens_all_self" on push_tokens for all
   using ("userId" = auth.uid())
   with check ("userId" = auth.uid());
