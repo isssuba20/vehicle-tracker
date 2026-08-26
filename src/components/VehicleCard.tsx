@@ -4,8 +4,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Vehicle } from "@/types/models";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
-import { dateUrgency, pmsUrgency } from "@/utils/urgency";
-import { formatKm } from "@/utils/format";
+import { dateUrgency, pmsUrgency, worseOf } from "@/utils/urgency";
+import { formatKm, formatDate } from "@/utils/format";
 import { EfficiencyDisplay } from "@/utils/vehicleEfficiencyDisplay";
 import { usePhotoPicker } from "@/utils/usePhotoPicker";
 import { PhotoActionSheet } from "./PhotoActionSheet";
@@ -15,11 +15,14 @@ import { UrgencyDot } from "./UrgencyDot";
 export function VehicleCard({
   vehicle,
   efficiency,
+  driverName,
   onPress,
   onPhotoChange,
 }: {
   vehicle: Vehicle;
   efficiency: EfficiencyDisplay;
+  /** Display name of vehicle.primaryDriverUserId, resolved by the caller (has the member list). */
+  driverName?: string;
   onPress: () => void;
   onPhotoChange: (uri: string | undefined) => void;
 }) {
@@ -30,6 +33,16 @@ export function VehicleCard({
   const registration = dateUrgency(vehicle.registrationExpiry);
   const insurance = dateUrgency(vehicle.insuranceExpiry);
   const pms = pmsUrgency(vehicle.nextPmsDueDate, vehicle.nextPmsDueKm, vehicle.currentOdometerKm);
+  const overall = worseOf(worseOf(registration, insurance), pms);
+
+  const nextDue =
+    registration !== "ok"
+      ? { label: "Registration", dateIso: vehicle.registrationExpiry }
+      : insurance !== "ok"
+      ? { label: "Insurance", dateIso: vehicle.insuranceExpiry }
+      : pms !== "ok"
+      ? { label: "Next PMS", dateIso: vehicle.nextPmsDueDate }
+      : null;
 
   return (
     <AnimatedPressable onPress={onPress} style={styles.card} scaleTo={0.98}>
@@ -45,6 +58,7 @@ export function VehicleCard({
           <Text style={styles.name}>{vehicle.name}</Text>
           <Text style={styles.subtitle}>
             {vehicle.year} {vehicle.make} {vehicle.model}
+            {driverName ? ` · ${driverName}` : ""}
           </Text>
         </View>
         <View style={styles.dots}>
@@ -66,6 +80,14 @@ export function VehicleCard({
           </Text>
         </View>
       </View>
+      {nextDue && (
+        <Text style={styles.nextRow}>
+          <Text style={styles.nextLabel}>Next: </Text>
+          <Text style={overall === "overdue" ? styles.nextValueWarning : styles.nextValue}>
+            {nextDue.label} · {formatDate(nextDue.dateIso)}
+          </Text>
+        </Text>
+      )}
       <PhotoActionSheet {...sheetProps} />
     </AnimatedPressable>
   );
@@ -137,5 +159,25 @@ const makeStyles = (colors: ThemeColors) =>
     statValueWarning: {
       color: colors.overdueBright,
       fontSize: 13,
+    },
+    nextRow: {
+      marginTop: spacing.sm,
+      fontFamily: fonts.body,
+      fontSize: 12,
+    },
+    nextLabel: {
+      fontFamily: fonts.body,
+      fontSize: 12,
+      color: colors.textFaint,
+    },
+    nextValue: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 12,
+      color: colors.textMuted,
+    },
+    nextValueWarning: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 12,
+      color: colors.overdueBright,
     },
   });

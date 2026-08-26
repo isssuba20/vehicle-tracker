@@ -246,6 +246,15 @@ export class SqliteRepository implements Repository {
     );
   }
 
+  async updateGroup(group: Group): Promise<void> {
+    const db = await this.db();
+    await db.runAsync(`UPDATE groups SET name=?, monthlyBudget=? WHERE id=?`, [
+      group.name,
+      group.monthlyBudget ?? null,
+      group.id,
+    ]);
+  }
+
   async getGroupMembers(groupId: string): Promise<GroupMember[]> {
     const db = await this.db();
     return db.getAllAsync<GroupMember>(

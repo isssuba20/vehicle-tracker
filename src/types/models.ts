@@ -3,6 +3,8 @@ export type Role = "owner" | "member";
 export interface Group {
   id: string;
   name: string;
+  /** Household-wide monthly vehicle spending target, set in Settings. */
+  monthlyBudget?: number;
 }
 
 export interface GroupMember {
@@ -41,6 +43,9 @@ export interface Vehicle {
   estimatedRangeKm?: number;
   chargingPortType?: string;
   homeChargingNotes?: string;
+
+  /** Household member (GroupMember.userId) who mainly drives/is responsible for this vehicle. */
+  primaryDriverUserId?: string;
 }
 
 export interface ServiceLogEntry {

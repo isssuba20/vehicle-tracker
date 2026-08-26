@@ -25,7 +25,8 @@ function buildInfoLabel(): string {
 }
 
 export function SettingsScreen() {
-  const { groupIds, members, loadMembers, inviteMember, currentUserId } = useAppStore();
+  const { groupIds, groups, members, loadMembers, inviteMember, updateHouseholdBudget, currentUserId } =
+    useAppStore();
   const signOut = useAuthStore((s) => s.signOut);
   const currencyCode = useCurrencyStore((s) => s.code);
   const setCurrencyCode = useCurrencyStore((s) => s.setCode);
@@ -33,9 +34,27 @@ export function SettingsScreen() {
   const styles = makeStyles(colors);
   const insets = useSafeAreaInsets();
   const groupId = groupIds[0];
+  const household = groups.find((g) => g.id === groupId);
   const [inviteName, setInviteName] = useState("");
   const [lastCode, setLastCode] = useState<string | null>(null);
   const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [budgetInput, setBudgetInput] = useState(household?.monthlyBudget != null ? String(household.monthlyBudget) : "");
+  const [savingBudget, setSavingBudget] = useState(false);
+
+  async function handleSaveBudget() {
+    if (!groupId || savingBudget) return;
+    const value = budgetInput.trim() ? Number(budgetInput) : undefined;
+    if (budgetInput.trim() && (Number.isNaN(value) || (value as number) < 0)) {
+      Alert.alert("Enter a valid amount", "Use a positive number, or leave it blank to remove the budget.");
+      return;
+    }
+    setSavingBudget(true);
+    try {
+      await updateHouseholdBudget(groupId, value);
+    } finally {
+      setSavingBudget(false);
+    }
+  }
 
   async function handleCheckForUpdate() {
     if (!Updates.isEnabled) {
@@ -67,6 +86,10 @@ export function SettingsScreen() {
   useEffect(() => {
     if (groupId) loadMembers(groupId);
   }, [groupId]);
+
+  useEffect(() => {
+    setBudgetInput(household?.monthlyBudget != null ? String(household.monthlyBudget) : "");
+  }, [household?.monthlyBudget]);
 
   async function handleInvite() {
     if (!groupId) return;
@@ -126,6 +149,23 @@ export function SettingsScreen() {
             );
           })}
         </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Household budget</Text>
+        <Text style={styles.sectionBody}>
+          A monthly target for total vehicle spending, shown against actual spend on the dashboard.
+        </Text>
+        <TextField
+          label={`Monthly budget (${currencyCode})`}
+          placeholder="Leave blank for no budget"
+          keyboardType="decimal-pad"
+          value={budgetInput}
+          onChangeText={setBudgetInput}
+        />
+        <Pressable style={styles.inviteButton} onPress={handleSaveBudget} disabled={savingBudget}>
+          <Text style={styles.inviteButtonText}>{savingBudget ? "Saving…" : "Save budget"}</Text>
+        </Pressable>
       </View>
 
       <View style={styles.section}>

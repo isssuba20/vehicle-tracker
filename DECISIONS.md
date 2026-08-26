@@ -150,6 +150,56 @@ by disabling the button and guarding `handleSave` re-entry while a save
 is in flight — applied the same fix to QuickAddSheet (fuel/service/
 charging entries) since it had the identical gap.
 
+## Household Vehicle Management upgrade: scope actually delivered
+
+The user's brief covered 29 sections (household roles, Action Center,
+fleet intelligence, predictive maintenance, TCO, ownership timeline,
+Vehicle Passport, shareable sale reports, AI/OCR capture, parts/tire/
+service-center history, activity feed, task assignment, trip cost,
+Philippine-specific document types, and a dashboard/login redesign).
+Proposed (and the user confirmed) shipping a coherent slice rather than
+partially building all 29: this pass delivers the foundation + a real
+intelligence layer, not the full list. Specifically:
+
+**Delivered:**
+- Login tagline ("Manage your household's vehicles").
+- Household already existed as `Group`/`GroupMember` — no rename of the
+  underlying model, since every user-facing string already said
+  "household," not "group" (checked before touching anything).
+- `Vehicle.primaryDriverUserId` (a lightweight "responsibility," not a
+  role/permission system) + a chip picker in Add/Edit Vehicle, driver
+  name now shown on the Dashboard's vehicle cards.
+- `Group.monthlyBudget`, editable in Settings.
+- **No new expense table.** Fuel/service/charging entries already carry
+  cost + vehicleId + date; `src/services/fleetAnalytics.ts` merges them
+  into a unified `UnifiedExpense[]` view at read time instead of
+  duplicating that data into a new "Expense" table — avoids exactly the
+  "duplicate data structures" the brief said to avoid.
+- Household Dashboard rebuilt around: greeting + Action Center
+  (aggregated overdue/due-soon across every vehicle, replacing
+  per-vehicle discovery, with "Mark done" inline) → Your Fleet → Fleet
+  Intelligence → Household Budget → Recent Activity.
+- Fleet Intelligence and the Activity Feed are both derived, not stored
+  — computed from existing entries each render, per "do not store
+  derived statistics unnecessarily."
+- Data trust: insights only render once there are >= 4 expense records
+  and only for effects big enough to be worth saying (>=1% spend
+  change, a vehicle at >=40% of household spend) — otherwise shows
+  "Fleet intelligence is learning," never a fabricated stat. Budget
+  card similarly explains itself with no budget set rather than
+  showing a meaningless ₱0/₱0 bar.
+
+**Deliberately deferred** (each is a substantial standalone feature; see
+chat for the explicit scoping discussion before starting):
+predictive maintenance from historical intervals, total-cost-of-
+ownership comparisons, vehicle ownership timeline, Vehicle Passport
+screen, shareable sale report/PDF export, AI/OCR receipt capture (no
+vision API is wired into this project), parts history, tire management,
+service-center history, a real activity-log table (today's feed is
+derived from log entries, not a persisted event stream — "mark done"
+actions don't appear in it), assignable tasks beyond the single
+primary-driver field, and true trip cost.
+
 ## Bug: clearing an optional field silently no-op'd on Supabase
 
 Root cause: `JSON.stringify` drops keys whose value is `undefined`, and

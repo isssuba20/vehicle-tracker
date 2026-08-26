@@ -129,13 +129,17 @@ export class SupabaseRepository implements Repository {
   async getGroups(userId: string): Promise<Group[]> {
     const res = await client()
       .from("group_members")
-      .select("groupId, groups(id, name)")
+      .select('groupId, groups(id, name, monthlyBudget)')
       .eq("userId", userId);
     const rows = check(res) ?? [];
     return rows
       .map((r: any) => r.groups)
       .filter(Boolean)
-      .map((g: any) => ({ id: g.id, name: g.name }));
+      .map((g: any) => ({ id: g.id, name: g.name, monthlyBudget: g.monthlyBudget ?? undefined }));
+  }
+
+  async updateGroup(group: Group): Promise<void> {
+    check(await client().from("groups").update(withNulls(group)).eq("id", group.id));
   }
 
   async getGroupMembers(groupId: string): Promise<GroupMember[]> {

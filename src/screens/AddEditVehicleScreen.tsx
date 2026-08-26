@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, Pressable, StyleSheet, Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import uuid from "react-native-uuid";
@@ -26,7 +26,7 @@ const FUEL_TYPE_OPTIONS: { value: FuelType; label: string }[] = [
 
 export function AddEditVehicleScreen({ route, navigation }: Props) {
   const { vehicleId } = route.params;
-  const { vehicles, groupIds, addVehicle, updateVehicle, deleteVehicle } = useAppStore();
+  const { vehicles, groupIds, members, loadMembers, addVehicle, updateVehicle, deleteVehicle } = useAppStore();
   const colors = useThemeStore((s) => s.colors);
   const currencyCode = useCurrencyStore((s) => s.code);
   const insets = useSafeAreaInsets();
@@ -63,11 +63,16 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
   );
   const [chargingPortType, setChargingPortType] = useState(existing?.chargingPortType ?? "");
   const [homeChargingNotes, setHomeChargingNotes] = useState(existing?.homeChargingNotes ?? "");
+  const [primaryDriverUserId, setPrimaryDriverUserId] = useState(existing?.primaryDriverUserId ?? "");
 
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const showEvDetails = fuelType !== "gas";
+
+  useEffect(() => {
+    if (groupIds[0]) loadMembers(groupIds[0]);
+  }, [groupIds[0]]);
 
   async function handleSave() {
     if (submitting) return;
@@ -107,6 +112,7 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
       estimatedRangeKm: showEvDetails && estimatedRangeKm ? Number(estimatedRangeKm) : undefined,
       chargingPortType: showEvDetails ? chargingPortType.trim() || undefined : undefined,
       homeChargingNotes: showEvDetails ? homeChargingNotes.trim() || undefined : undefined,
+      primaryDriverUserId: primaryDriverUserId || undefined,
     };
 
     setSubmitting(true);
@@ -184,6 +190,36 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
           })}
         </View>
       </View>
+
+      {members.length > 0 && (
+        <View style={styles.fieldGroup}>
+          <Text style={styles.fieldLabel}>Primary driver</Text>
+          <View style={styles.currencyGrid}>
+            <Pressable
+              style={[styles.currencyChip, !primaryDriverUserId && styles.currencyChipActive]}
+              onPress={() => setPrimaryDriverUserId("")}
+            >
+              <Text style={[styles.currencyChipText, !primaryDriverUserId && styles.currencyChipTextActive]}>
+                Unassigned
+              </Text>
+            </Pressable>
+            {members.map((m) => {
+              const active = primaryDriverUserId === m.userId;
+              return (
+                <Pressable
+                  key={m.userId}
+                  style={[styles.currencyChip, active && styles.currencyChipActive]}
+                  onPress={() => setPrimaryDriverUserId(m.userId)}
+                >
+                  <Text style={[styles.currencyChipText, active && styles.currencyChipTextActive]}>
+                    {m.displayName}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      )}
 
       <DateField label="Purchase date" valueIso={purchaseDate} onChange={setPurchaseDate} />
       <TextField label={`Purchase price (${currencyCode})`} placeholder="0" keyboardType="decimal-pad" value={purchasePrice} onChangeText={setPurchasePrice} />
@@ -314,6 +350,32 @@ const makeStyles = (colors: ThemeColors) => StyleSheet.create({
     color: colors.textMuted,
   },
   segmentTextActive: {
+    color: colors.onAccent,
+    fontFamily: fonts.bodySemiBold,
+  },
+  currencyGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+  },
+  currencyChip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs + 2,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  currencyChipActive: {
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
+  },
+  currencyChipText: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 13,
+    color: colors.textMuted,
+  },
+  currencyChipTextActive: {
     color: colors.onAccent,
     fontFamily: fonts.bodySemiBold,
   },

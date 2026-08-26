@@ -16,7 +16,8 @@ create extension if not exists "pgcrypto";
 
 create table if not exists groups (
   id uuid primary key default gen_random_uuid(),
-  name text not null
+  name text not null,
+  "monthlyBudget" numeric
 );
 
 create table if not exists group_members (
@@ -60,8 +61,14 @@ create table if not exists vehicles (
   "registrationExpiry" text not null,
   "insuranceExpiry" text not null,
   "nextPmsDueDate" text not null,
-  "nextPmsDueKm" numeric
+  "nextPmsDueKm" numeric,
+  "primaryDriverUserId" uuid references auth.users(id)
 );
+
+-- Additive migration for installs that ran this file before these columns
+-- existed — CREATE TABLE IF NOT EXISTS only applies to brand-new tables.
+alter table groups add column if not exists "monthlyBudget" numeric;
+alter table vehicles add column if not exists "primaryDriverUserId" uuid references auth.users(id);
 
 create table if not exists service_entries (
   id uuid primary key default gen_random_uuid(),

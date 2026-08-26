@@ -41,6 +41,7 @@ export interface Repository {
 
   // Groups / sharing
   getGroups(userId: string): Promise<Group[]>;
+  updateGroup(group: Group): Promise<void>;
   getGroupMembers(groupId: string): Promise<GroupMember[]>;
   createGroup(group: Group, owner: GroupMember): Promise<void>;
   addGroupMember(member: GroupMember): Promise<void>;

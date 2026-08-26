@@ -19,7 +19,8 @@ export async function openDb(): Promise<SQLite.SQLiteDatabase> {
 
     CREATE TABLE IF NOT EXISTS groups (
       id TEXT PRIMARY KEY NOT NULL,
-      name TEXT NOT NULL
+      name TEXT NOT NULL,
+      monthlyBudget REAL
     );
 
     CREATE TABLE IF NOT EXISTS group_members (
@@ -52,7 +53,8 @@ export async function openDb(): Promise<SQLite.SQLiteDatabase> {
       registrationExpiry TEXT NOT NULL,
       insuranceExpiry TEXT NOT NULL,
       nextPmsDueDate TEXT NOT NULL,
-      nextPmsDueKm REAL
+      nextPmsDueKm REAL,
+      primaryDriverUserId TEXT
     );
 
     CREATE TABLE IF NOT EXISTS service_entries (
@@ -100,6 +102,8 @@ export async function openDb(): Promise<SQLite.SQLiteDatabase> {
   await ensureColumn(db, "vehicles", "estimatedRangeKm", "REAL");
   await ensureColumn(db, "vehicles", "chargingPortType", "TEXT");
   await ensureColumn(db, "vehicles", "homeChargingNotes", "TEXT");
+  await ensureColumn(db, "vehicles", "primaryDriverUserId", "TEXT");
+  await ensureColumn(db, "groups", "monthlyBudget", "REAL");
 
   return db;
 }

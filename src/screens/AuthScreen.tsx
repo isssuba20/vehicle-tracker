@@ -52,7 +52,7 @@ export function AuthScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.title}>Garahe</Text>
-        <Text style={styles.tagline}>Household Fleet Tracker</Text>
+        <Text style={styles.tagline}>Manage your household's vehicles</Text>
         <Text style={styles.subtitle}>
           {mode === "signIn" ? "Sign in to your household" : "Create your account"}
         </Text>
@@ -119,12 +119,11 @@ const makeStyles = (colors: ThemeColors) =>
     },
     tagline: {
       fontFamily: fonts.bodyMedium,
-      fontSize: 13,
-      letterSpacing: 0.5,
-      textTransform: "uppercase",
+      fontSize: 14,
+      letterSpacing: 0.2,
       color: colors.textMuted,
       textAlign: "center",
-      marginTop: 4,
+      marginTop: 6,
     },
     subtitle: {
       fontFamily: fonts.body,

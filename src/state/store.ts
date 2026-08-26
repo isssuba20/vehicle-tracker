@@ -18,6 +18,7 @@ interface AppState {
   ready: boolean;
   currentUserId: string;
   groupIds: string[];
+  groups: Group[];
   vehicles: Vehicle[];
   serviceByVehicle: Record<string, ServiceLogEntry[]>;
   fuelByVehicle: Record<string, FuelLogEntry[]>;
@@ -34,6 +35,7 @@ interface AppState {
 
   createHousehold: (name: string, displayName: string) => Promise<void>;
   joinHousehold: (code: string, displayName: string) => Promise<void>;
+  updateHouseholdBudget: (groupId: string, monthlyBudget: number | undefined) => Promise<void>;
 
   addVehicle: (vehicle: Vehicle) => Promise<void>;
   updateVehicle: (vehicle: Vehicle) => Promise<void>;
@@ -55,6 +57,7 @@ interface AppState {
 }
 
 const emptyState = {
+  groups: [] as Group[],
   vehicles: [] as Vehicle[],
   serviceByVehicle: {} as Record<string, ServiceLogEntry[]>,
   fuelByVehicle: {} as Record<string, FuelLogEntry[]>,
@@ -87,7 +90,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   refreshGroups: async () => {
     const groups = await repo.getGroups(get().currentUserId);
-    set({ groupIds: groups.map((g) => g.id) });
+    set({ groups, groupIds: groups.map((g) => g.id) });
   },
 
   refreshVehicles: async () => {
@@ -131,6 +134,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     await redeemInvite(code, get().currentUserId, displayName);
     await get().refreshGroups();
     await get().refreshVehicles();
+  },
+
+  updateHouseholdBudget: async (groupId: string, monthlyBudget: number | undefined) => {
+    const group = get().groups.find((g) => g.id === groupId);
+    if (!group) return;
+    await repo.updateGroup({ ...group, monthlyBudget });
+    await get().refreshGroups();
   },
 
   addVehicle: async (vehicle: Vehicle) => {
