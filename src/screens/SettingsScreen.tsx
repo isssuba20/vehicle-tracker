@@ -1,8 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, Pressable, StyleSheet, Alert } from "react-native";
+import * as Updates from "expo-updates";
 import { useAppStore } from "@/state/store";
 import { colors, fonts, radii, spacing } from "@/theme/theme";
 import { TextField } from "@/components/TextField";
+
+function buildInfoLabel(): string {
+  if (!Updates.isEnabled) return "Dev build (no OTA updates)";
+  if (Updates.isEmbeddedLaunch) return "Running the version built into this install";
+  const shortId = Updates.updateId ? Updates.updateId.slice(0, 8) : "unknown";
+  const when = Updates.createdAt ? Updates.createdAt.toLocaleString() : "unknown time";
+  return `Update ${shortId} · published ${when}`;
+}
 
 export function SettingsScreen() {
   const { groupIds, members, loadMembers, inviteMember, currentUserId } = useAppStore();
@@ -71,6 +80,8 @@ export function SettingsScreen() {
           </View>
         )}
       </View>
+
+      <Text style={styles.buildInfo}>{buildInfoLabel()}</Text>
     </View>
   );
 }
@@ -162,5 +173,13 @@ const styles = StyleSheet.create({
     letterSpacing: 4,
     color: colors.ok,
     marginTop: 4,
+  },
+  buildInfo: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    color: colors.inkFaint,
+    textAlign: "center",
+    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
   },
 });
