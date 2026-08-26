@@ -20,6 +20,21 @@ function check<T>(result: { data: T | null; error: { message: string } | null })
 }
 
 /**
+ * Supabase/PostgREST drops `undefined` fields from the request body
+ * entirely (JSON.stringify strips them) rather than nulling the column —
+ * so clearing an optional field (e.g. removing a vehicle photo) silently
+ * no-ops unless it's sent as `null` instead. Model objects use `undefined`
+ * for "cleared" throughout the app, so every write goes through this.
+ */
+function withNulls<T extends object>(obj: T): T {
+  const result = { ...obj } as any;
+  for (const key in result) {
+    if (result[key] === undefined) result[key] = null;
+  }
+  return result;
+}
+
+/**
  * Supabase-backed Repository. Table columns are quoted camelCase in
  * schema.sql to match these model field names exactly, so rows can be
  * read/written with no per-field mapping.
@@ -37,11 +52,11 @@ export class SupabaseRepository implements Repository {
   }
 
   async createVehicle(vehicle: Vehicle): Promise<void> {
-    check(await client().from("vehicles").insert(vehicle));
+    check(await client().from("vehicles").insert(withNulls(vehicle)));
   }
 
   async updateVehicle(vehicle: Vehicle): Promise<void> {
-    check(await client().from("vehicles").update(vehicle).eq("id", vehicle.id));
+    check(await client().from("vehicles").update(withNulls(vehicle)).eq("id", vehicle.id));
   }
 
   async deleteVehicle(id: string): Promise<void> {
@@ -58,11 +73,11 @@ export class SupabaseRepository implements Repository {
   }
 
   async addServiceEntry(entry: ServiceLogEntry): Promise<void> {
-    check(await client().from("service_entries").insert(entry));
+    check(await client().from("service_entries").insert(withNulls(entry)));
   }
 
   async updateServiceEntry(entry: ServiceLogEntry): Promise<void> {
-    check(await client().from("service_entries").update(entry).eq("id", entry.id));
+    check(await client().from("service_entries").update(withNulls(entry)).eq("id", entry.id));
   }
 
   async deleteServiceEntry(id: string): Promise<void> {
@@ -79,11 +94,11 @@ export class SupabaseRepository implements Repository {
   }
 
   async addFuelEntry(entry: FuelLogEntry): Promise<void> {
-    check(await client().from("fuel_entries").insert(entry));
+    check(await client().from("fuel_entries").insert(withNulls(entry)));
   }
 
   async updateFuelEntry(entry: FuelLogEntry): Promise<void> {
-    check(await client().from("fuel_entries").update(entry).eq("id", entry.id));
+    check(await client().from("fuel_entries").update(withNulls(entry)).eq("id", entry.id));
   }
 
   async deleteFuelEntry(id: string): Promise<void> {
@@ -100,11 +115,11 @@ export class SupabaseRepository implements Repository {
   }
 
   async addChargingEntry(entry: ChargingLogEntry): Promise<void> {
-    check(await client().from("charging_entries").insert(entry));
+    check(await client().from("charging_entries").insert(withNulls(entry)));
   }
 
   async updateChargingEntry(entry: ChargingLogEntry): Promise<void> {
-    check(await client().from("charging_entries").update(entry).eq("id", entry.id));
+    check(await client().from("charging_entries").update(withNulls(entry)).eq("id", entry.id));
   }
 
   async deleteChargingEntry(id: string): Promise<void> {

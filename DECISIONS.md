@@ -150,6 +150,19 @@ by disabling the button and guarding `handleSave` re-entry while a save
 is in flight — applied the same fix to QuickAddSheet (fuel/service/
 charging entries) since it had the identical gap.
 
+## Bug: clearing an optional field silently no-op'd on Supabase
+
+Root cause: `JSON.stringify` drops keys whose value is `undefined`, and
+the model layer represents "cleared" (no photo, no notes, no PMS-by-km,
+etc.) as `undefined` throughout — `SupabaseRepository`'s `.insert()`/
+`.update()` calls were passing model objects straight through, so a
+cleared field's key vanished from the request body entirely and
+PostgREST left the column untouched instead of nulling it. Silent:
+no error, the write just didn't do what it looked like it did. Fixed
+with `withNulls()`, converting `undefined` → `null` before every
+Supabase write. `SqliteRepository` was never affected — its raw SQL
+already used `v.photoUri ?? null` explicitly at each bound parameter.
+
 ## Micro-interactions: haptics + press/scale, kept restrained
 
 Added `expo-haptics` (a native module — needs an `eas build`, not just
