@@ -200,6 +200,23 @@ derived from log entries, not a persisted event stream — "mark done"
 actions don't appear in it), assignable tasks beyond the single
 primary-driver field, and true trip cost.
 
+## Predictive maintenance: pattern-based, never presented as scheduled
+
+`src/services/maintenancePrediction.ts` groups a vehicle's own service
+history by type (e.g. "Oil change"), needs at least 2 real intervals
+(3 entries of the same type) before predicting anything, and averages
+those km intervals to estimate when that type is next due. No schema
+change — reads the existing `service_entries` table.
+
+Kept strictly separate from the scheduled `nextPmsDueDate`/`nextPmsDueKm`
+on Vehicle: predictions render in their own "Predicted maintenance"
+section with a visible "Predicted" tag on every row, never inside
+"Renewals & Maintenance" and never using the "Overdue" badge/color —
+"~X km past est." instead, in the due-soon amber rather than overdue
+red, so a pattern-based guess can never be mistaken for a manufacturer-
+required item. Below the 3-entries-per-type threshold, shows an
+explanatory empty state rather than nothing or a fabricated guess.
+
 ## Bug: clearing an optional field silently no-op'd on Supabase
 
 Root cause: `JSON.stringify` drops keys whose value is `undefined`, and

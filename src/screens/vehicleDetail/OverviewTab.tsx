@@ -10,10 +10,12 @@ import { StatusRow } from "@/components/StatusRow";
 import { getEfficiencyDisplay } from "@/utils/vehicleEfficiencyDisplay";
 import { useCurrencyStore } from "@/state/useCurrencyStore";
 import { MarkDoneSheet, RenewalKind } from "./MarkDoneSheet";
+import { PredictedMaintenanceCard } from "@/components/PredictedMaintenanceCard";
+import { getMaintenancePredictions } from "@/services/maintenancePrediction";
 
 export function OverviewTab() {
   const vehicle = useVehicle();
-  const { fuelByVehicle, chargingByVehicle, loadVehicleDetail } = useAppStore();
+  const { fuelByVehicle, chargingByVehicle, serviceByVehicle, loadVehicleDetail } = useAppStore();
   const colors = useThemeStore((s) => s.colors);
   const currencyCode = useCurrencyStore((s) => s.code);
   const styles = makeStyles(colors);
@@ -37,6 +39,12 @@ export function OverviewTab() {
   const pmsExtra = vehicle.nextPmsDueKm
     ? `or ${formatKm(vehicle.nextPmsDueKm)}, whichever comes first`
     : undefined;
+
+  const serviceEntries = serviceByVehicle[vehicle.id] ?? [];
+  const predictions = useMemo(
+    () => getMaintenancePredictions(serviceEntries, vehicle.currentOdometerKm),
+    [serviceEntries, vehicle.currentOdometerKm]
+  );
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: spacing.xl }}>
@@ -70,6 +78,13 @@ export function OverviewTab() {
           vehicle={vehicle}
           onClose={() => setMarkDoneKind(null)}
         />
+      )}
+
+      {serviceEntries.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Predicted maintenance</Text>
+          <PredictedMaintenanceCard predictions={predictions} />
+        </View>
       )}
 
       <View style={styles.card}>
@@ -156,6 +171,9 @@ const makeStyles = (colors: ThemeColors) =>
       flex: 1,
       backgroundColor: colors.background,
       paddingHorizontal: spacing.md,
+    },
+    section: {
+      marginTop: spacing.lg,
     },
     card: {
       marginTop: spacing.lg,
