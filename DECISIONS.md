@@ -313,6 +313,30 @@ neither the app nor I can do unattended:
   a second scheduling/dedup mechanism for what the user's original ask
   described as one daily check.
 
+## Service center history: grouped by shop, no new table
+
+`src/services/serviceCenters.ts` groups existing service entries by their
+`shop` field (already on `ServiceLogEntry`, no schema change) into
+per-shop visit counts, totals, and average cost, sorted by total spend.
+Entries with no shop recorded fall into an "Unspecified shop" bucket
+rather than being silently dropped, so the totals in this view still
+reconcile with the vehicle's own service history. New `ServiceCenters`
+screen reachable from Settings.
+
+## Shareable vehicle history report: text via OS share sheet, not PDF
+
+`src/services/vehicleReport.ts` builds a plain-text report (identity,
+ownership, full service history, spending summary) from the vehicle's
+existing service/fuel/charging entries and `getVehicleOwnershipCost`,
+shared through React Native's built-in `Share.share()` from a new icon
+button on Vehicle Detail. No PDF/print library added — the brief's own
+fallback instruction was to ship a clean shareable view first rather
+than pull in a dependency for one feature. Photos aren't included since
+the channel is plain text; a PDF version with photos would need eg.
+`expo-print`/`react-native-html-to-pdf` (a native module — `eas build`,
+not OTA) and is a reasonable fast-follow if a formatted report matters
+more than shipping fast.
+
 ## Card usage in Vehicle Detail → Overview tab
 
 The brief says not to wrap every section in a card. Kept "At a glance" (the

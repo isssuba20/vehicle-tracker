@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Text, Pressable, ActivityIndicator, StyleSheet, Share, Alert } from "react-native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { Ionicons } from "@expo/vector-icons";
 import { RootStackParamList } from "@/navigation/types";
 import { useAppStore } from "@/state/store";
+import { useCurrencyStore } from "@/state/useCurrencyStore";
 import { Vehicle } from "@/types/models";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { buildVehicleReportText } from "@/services/vehicleReport";
 import { VehicleProvider } from "./vehicleDetail/VehicleContext";
 import { OverviewTab } from "./vehicleDetail/OverviewTab";
 import { ServiceTab } from "./vehicleDetail/ServiceTab";
@@ -21,7 +24,8 @@ type Props = NativeStackScreenProps<RootStackParamList, "VehicleDetail">;
 
 export function VehicleDetailScreen({ route, navigation }: Props) {
   const { vehicleId } = route.params;
-  const vehicles = useAppStore((s) => s.vehicles);
+  const { vehicles, serviceByVehicle, fuelByVehicle, chargingByVehicle, loadVehicleDetail } = useAppStore();
+  const currencyCode = useCurrencyStore((s) => s.code);
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
   const [vehicle, setVehicle] = useState<Vehicle | undefined>(
@@ -31,6 +35,26 @@ export function VehicleDetailScreen({ route, navigation }: Props) {
   useEffect(() => {
     setVehicle(vehicles.find((v) => v.id === vehicleId));
   }, [vehicles, vehicleId]);
+
+  useEffect(() => {
+    loadVehicleDetail(vehicleId);
+  }, [vehicleId]);
+
+  async function handleShare() {
+    if (!vehicle) return;
+    try {
+      const text = buildVehicleReportText(
+        vehicle,
+        serviceByVehicle[vehicle.id] ?? [],
+        fuelByVehicle[vehicle.id] ?? [],
+        chargingByVehicle[vehicle.id] ?? [],
+        currencyCode
+      );
+      await Share.share({ message: text, title: `${vehicle.name} — Vehicle history report` });
+    } catch (err) {
+      Alert.alert("Couldn't share", err instanceof Error ? err.message : "Unknown error");
+    }
+  }
 
   if (!vehicle) {
     return (
@@ -51,6 +75,9 @@ export function VehicleDetailScreen({ route, navigation }: Props) {
         </View>
         <View style={styles.headerActions}>
           <ThemeToggle colors={colors} />
+          <Pressable style={styles.iconButton} onPress={handleShare} hitSlop={8}>
+            <Ionicons name="share-outline" size={18} color={colors.textPrimary} />
+          </Pressable>
           <Pressable
             style={styles.editButton}
             onPress={() => navigation.navigate("AddEditVehicle", { vehicleId: vehicle.id })}
@@ -113,6 +140,15 @@ const makeStyles = (colors: ThemeColors) =>
       flexDirection: "row",
       alignItems: "center",
       gap: spacing.sm,
+    },
+    iconButton: {
+      width: 36,
+      height: 36,
+      borderRadius: radii.sm,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: "center",
+      justifyContent: "center",
     },
     editButton: {
       paddingHorizontal: spacing.md,
