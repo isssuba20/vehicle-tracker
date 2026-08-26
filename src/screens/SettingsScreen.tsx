@@ -35,6 +35,34 @@ export function SettingsScreen() {
   const groupId = groupIds[0];
   const [inviteName, setInviteName] = useState("");
   const [lastCode, setLastCode] = useState<string | null>(null);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+
+  async function handleCheckForUpdate() {
+    if (!Updates.isEnabled) {
+      Alert.alert("Dev build", "This install has no OTA updates channel — rebuild to get a new native binary.");
+      return;
+    }
+    setCheckingUpdate(true);
+    try {
+      const check = await Updates.checkForUpdateAsync();
+      if (!check.isAvailable) {
+        Alert.alert("Up to date", "The update server has nothing newer than what's currently running.");
+        return;
+      }
+      const fetched = await Updates.fetchUpdateAsync();
+      if (fetched.isNew) {
+        Alert.alert("Update downloaded", "Restarting to apply it now.", [
+          { text: "OK", onPress: () => Updates.reloadAsync() },
+        ]);
+      } else {
+        Alert.alert("Nothing to apply", "Checked, but no new bundle was fetched.");
+      }
+    } catch (err) {
+      Alert.alert("Update check failed", err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setCheckingUpdate(false);
+    }
+  }
 
   useEffect(() => {
     if (groupId) loadMembers(groupId);
@@ -133,6 +161,15 @@ export function SettingsScreen() {
       )}
 
       <Text style={styles.buildInfo}>{buildInfoLabel()}</Text>
+      <Pressable
+        style={styles.checkUpdateButton}
+        onPress={handleCheckForUpdate}
+        disabled={checkingUpdate}
+      >
+        <Text style={styles.checkUpdateText}>
+          {checkingUpdate ? "Checking…" : "Check for updates"}
+        </Text>
+      </Pressable>
     </ScrollView>
   );
 }
@@ -271,6 +308,16 @@ const makeStyles = (colors: ThemeColors) =>
       color: colors.textFaint,
       textAlign: "center",
       marginTop: spacing.sm,
+      marginBottom: spacing.sm,
+    },
+    checkUpdateButton: {
+      alignItems: "center",
+      paddingVertical: spacing.sm,
       marginBottom: spacing.lg,
+    },
+    checkUpdateText: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 12,
+      color: colors.accent,
     },
   });
