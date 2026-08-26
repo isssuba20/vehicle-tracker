@@ -11,6 +11,7 @@ import { ActionCenter } from "@/components/ActionCenter";
 import { FleetIntelligenceCard } from "@/components/FleetIntelligenceCard";
 import { HouseholdBudgetCard } from "@/components/HouseholdBudgetCard";
 import { ActivityFeed } from "@/components/ActivityFeed";
+import { OwnershipComparisonCard } from "@/components/OwnershipComparisonCard";
 import { MarkDoneSheet, RenewalKind } from "./vehicleDetail/MarkDoneSheet";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
@@ -22,6 +23,7 @@ import {
   getMonthTotal,
   ActionItem,
 } from "@/services/fleetAnalytics";
+import { getHouseholdOwnershipCosts, getOwnershipComparison } from "@/services/ownershipCost";
 
 type Props = TabScreenProps<"Dashboard">;
 
@@ -91,6 +93,10 @@ export function DashboardScreen({ navigation }: Props) {
 
   const insights = useMemo(() => getFleetInsights(expenses), [expenses]);
   const actualThisMonth = useMemo(() => getMonthTotal(expenses, 0), [expenses]);
+  const ownershipComparison = useMemo(() => {
+    const costs = getHouseholdOwnershipCosts(vehicles, expenses);
+    return getOwnershipComparison(costs);
+  }, [vehicles, expenses]);
   const household = groups.find((g) => g.id === groupId);
   const currentMemberName = memberNameById[currentUserId];
 
@@ -169,6 +175,15 @@ export function DashboardScreen({ navigation }: Props) {
               <View style={styles.section}>
                 <FleetIntelligenceCard insights={insights} learning={expenses.length < MIN_EXPENSES_FOR_INSIGHTS} />
               </View>
+
+              {ownershipComparison && (
+                <>
+                  <Text style={styles.sectionTitle}>Cost to own</Text>
+                  <View style={styles.section}>
+                    <OwnershipComparisonCard comparison={ownershipComparison} currencyCode={currencyCode} />
+                  </View>
+                </>
+              )}
 
               <Text style={styles.sectionTitle}>Household budget</Text>
               <View style={styles.section}>

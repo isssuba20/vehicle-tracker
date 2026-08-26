@@ -200,6 +200,30 @@ derived from log entries, not a persisted event stream — "mark done"
 actions don't appear in it), assignable tasks beyond the single
 primary-driver field, and true trip cost.
 
+## Bug: unmigrated column broke app startup entirely
+
+Root cause: the Household Management commit added `groups.monthlyBudget`
+and `vehicles.primaryDriverUserId` to the app code and to
+`supabase/schema.sql`, but a schema.sql change only takes effect once
+re-run in the Supabase SQL editor — the user hadn't done that yet.
+`getGroups()` (called during every app init, before anything else can
+render) selected the new `monthlyBudget` column unconditionally; on a
+database that doesn't have it, that query hard-fails, `ready` never
+becomes true, and the app is stuck on its loading spinner indefinitely
+— not a transient glitch, a full outage until fixed or migrated.
+`createVehicle`/`updateVehicle` had the same landmine with
+`primaryDriverUserId` (any vehicle add/edit would have failed too).
+
+Fixed generally, not just for these two columns: `getGroups()` falls
+back to a query without `monthlyBudget` on error, and
+`writeWithColumnFallback()` retries a vehicle/group write with the
+new column stripped if the first attempt fails — so the app now works
+whether or not the user has re-run `schema.sql` yet, and the same
+pattern covers any future additive column added this way. The
+underlying lesson: a required-path query (anything in the app-init
+critical path) must never assume a schema change has already been
+applied remotely just because the code and schema.sql shipped together.
+
 ## Predictive maintenance: pattern-based, never presented as scheduled
 
 `src/services/maintenancePrediction.ts` groups a vehicle's own service

@@ -12,6 +12,9 @@ import { useCurrencyStore } from "@/state/useCurrencyStore";
 import { MarkDoneSheet, RenewalKind } from "./MarkDoneSheet";
 import { PredictedMaintenanceCard } from "@/components/PredictedMaintenanceCard";
 import { getMaintenancePredictions } from "@/services/maintenancePrediction";
+import { OwnershipCostCard } from "@/components/OwnershipCostCard";
+import { getAllExpenses } from "@/services/fleetAnalytics";
+import { getVehicleOwnershipCost } from "@/services/ownershipCost";
 
 export function OverviewTab() {
   const vehicle = useVehicle();
@@ -45,6 +48,16 @@ export function OverviewTab() {
     () => getMaintenancePredictions(serviceEntries, vehicle.currentOdometerKm),
     [serviceEntries, vehicle.currentOdometerKm]
   );
+
+  const ownershipCost = useMemo(() => {
+    const expenses = getAllExpenses(
+      [vehicle],
+      { [vehicle.id]: fuelByVehicle[vehicle.id] ?? [] },
+      { [vehicle.id]: serviceEntries },
+      { [vehicle.id]: chargingByVehicle[vehicle.id] ?? [] }
+    );
+    return getVehicleOwnershipCost(vehicle, expenses);
+  }, [vehicle, fuelByVehicle, serviceEntries, chargingByVehicle]);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: spacing.xl }}>
@@ -109,6 +122,11 @@ export function OverviewTab() {
             <Text style={styles.statValue}>{formatMoney(vehicle.purchasePrice, currencyCode)}</Text>
           </View>
         </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Ownership cost</Text>
+        <OwnershipCostCard cost={ownershipCost} currencyCode={currencyCode} />
       </View>
 
       <View style={styles.plainSection}>

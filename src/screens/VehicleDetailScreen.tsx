@@ -13,6 +13,7 @@ import { OverviewTab } from "./vehicleDetail/OverviewTab";
 import { ServiceTab } from "./vehicleDetail/ServiceTab";
 import { FuelTab } from "./vehicleDetail/FuelTab";
 import { ChargingTab } from "./vehicleDetail/ChargingTab";
+import { TimelineTab } from "./vehicleDetail/TimelineTab";
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -75,6 +76,7 @@ export function VehicleDetailScreen({ route, navigation }: Props) {
         ) : (
           <Tab.Screen name="Fuel" component={FuelTab} />
         )}
+        <Tab.Screen name="Timeline" component={TimelineTab} />
       </Tab.Navigator>
     </VehicleProvider>
   );

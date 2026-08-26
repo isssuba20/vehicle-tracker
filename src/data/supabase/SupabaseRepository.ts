@@ -35,6 +35,26 @@ function withNulls<T extends object>(obj: T): T {
 }
 
 /**
+ * Retries a write without `column` if it fails — covers a brand-new
+ * column (e.g. vehicles.primaryDriverUserId) that exists in this app's
+ * code before the user has re-run schema.sql on their actual database.
+ * Without this, a single unmigrated column would hard-fail every write
+ * to that table, not just the field itself.
+ */
+async function writeWithColumnFallback<T>(
+  attempt: (payload: any) => PromiseLike<{ data: T | null; error: { message: string } | null }>,
+  payload: any,
+  column: string
+): Promise<T> {
+  let res = await attempt(payload);
+  if (res.error) {
+    const { [column]: _omit, ...rest } = payload;
+    res = await attempt(rest);
+  }
+  return check(res);
+}
+
+/**
  * Supabase-backed Repository. Table columns are quoted camelCase in
  * schema.sql to match these model field names exactly, so rows can be
  * read/written with no per-field mapping.
@@ -52,11 +72,19 @@ export class SupabaseRepository implements Repository {
   }
 
   async createVehicle(vehicle: Vehicle): Promise<void> {
-    check(await client().from("vehicles").insert(withNulls(vehicle)));
+    await writeWithColumnFallback(
+      (payload) => client().from("vehicles").insert(payload),
+      withNulls(vehicle),
+      "primaryDriverUserId"
+    );
   }
 
   async updateVehicle(vehicle: Vehicle): Promise<void> {
-    check(await client().from("vehicles").update(withNulls(vehicle)).eq("id", vehicle.id));
+    await writeWithColumnFallback(
+      (payload) => client().from("vehicles").update(payload).eq("id", vehicle.id),
+      withNulls(vehicle),
+      "primaryDriverUserId"
+    );
   }
 
   async deleteVehicle(id: string): Promise<void> {
@@ -127,11 +155,18 @@ export class SupabaseRepository implements Repository {
   }
 
   async getGroups(userId: string): Promise<Group[]> {
-    const res = await client()
+    // Falls back to a query without monthlyBudget if that column doesn't
+    // exist yet on this project (schema.sql not re-run since it was
+    // added) — a hard failure here would leave the whole app stuck on
+    // its loading screen, since app init can't proceed without this call.
+    let res: any = await client()
       .from("group_members")
       .select('groupId, groups(id, name, monthlyBudget)')
       .eq("userId", userId);
-    const rows = check(res) ?? [];
+    if (res.error) {
+      res = await client().from("group_members").select("groupId, groups(id, name)").eq("userId", userId);
+    }
+    const rows: any[] = check(res) ?? [];
     return rows
       .map((r: any) => r.groups)
       .filter(Boolean)
@@ -139,7 +174,11 @@ export class SupabaseRepository implements Repository {
   }
 
   async updateGroup(group: Group): Promise<void> {
-    check(await client().from("groups").update(withNulls(group)).eq("id", group.id));
+    await writeWithColumnFallback(
+      (payload) => client().from("groups").update(payload).eq("id", group.id),
+      withNulls(group),
+      "monthlyBudget"
+    );
   }
 
   async getGroupMembers(groupId: string): Promise<GroupMember[]> {
