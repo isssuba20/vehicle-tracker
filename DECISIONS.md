@@ -337,6 +337,25 @@ the channel is plain text; a PDF version with photos would need eg.
 not OTA) and is a reasonable fast-follow if a formatted report matters
 more than shipping fast.
 
+## True trip cost: stateless calculator, nothing persisted
+
+`src/services/tripCost.ts` is a pure function, not a new feature backed
+by storage: given a distance typed in and optional one-off extras
+(tolls, parking), it estimates cost using the vehicle's own most recent
+logged efficiency (km/L or km/kWh — already computed in
+`fuelEfficiency.ts`/`chargingEfficiency.ts`) and most recent per-unit
+price (latest fuel/charging entry's cost ÷ liters or kWh). No trip
+table, no schema change — reachable via a "Trip cost calculator" link
+on Vehicle Detail → Overview → At a glance, opening `TripCostSheet`.
+
+Deliberately not "true" in the sense of tracking a real trip's actual
+odometer-start/odometer-end and refueling afterward — that would need
+persisted trip records (a schema change) to attribute a specific
+refuel to a specific trip. This is a same-session estimate, labeled
+"Estimated" throughout, with an honest empty state ("not enough logged
+history yet") instead of guessing when a vehicle has no fuel/charging
+entries at all.
+
 ## Card usage in Vehicle Detail → Overview tab
 
 The brief says not to wrap every section in a card. Kept "At a glance" (the

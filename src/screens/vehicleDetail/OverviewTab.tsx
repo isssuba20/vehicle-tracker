@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, Text, ScrollView, StyleSheet, Pressable } from "react-native";
 import { useVehicle } from "./VehicleContext";
 import { useAppStore } from "@/state/store";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
@@ -15,6 +15,7 @@ import { getMaintenancePredictions } from "@/services/maintenancePrediction";
 import { OwnershipCostCard } from "@/components/OwnershipCostCard";
 import { getAllExpenses } from "@/services/fleetAnalytics";
 import { getVehicleOwnershipCost } from "@/services/ownershipCost";
+import { TripCostSheet } from "./TripCostSheet";
 
 export function OverviewTab() {
   const vehicle = useVehicle();
@@ -23,6 +24,7 @@ export function OverviewTab() {
   const currencyCode = useCurrencyStore((s) => s.code);
   const styles = makeStyles(colors);
   const [markDoneKind, setMarkDoneKind] = useState<RenewalKind | null>(null);
+  const [tripCostVisible, setTripCostVisible] = useState(false);
 
   useEffect(() => {
     loadVehicleDetail(vehicle.id);
@@ -93,6 +95,16 @@ export function OverviewTab() {
         />
       )}
 
+      {tripCostVisible && (
+        <TripCostSheet
+          visible={tripCostVisible}
+          vehicle={vehicle}
+          fuelEntries={fuelByVehicle[vehicle.id] ?? []}
+          chargingEntries={chargingByVehicle[vehicle.id] ?? []}
+          onClose={() => setTripCostVisible(false)}
+        />
+      )}
+
       {serviceEntries.length > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Predicted maintenance</Text>
@@ -101,7 +113,12 @@ export function OverviewTab() {
       )}
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>At a glance</Text>
+        <View style={styles.cardHeaderRow}>
+          <Text style={styles.sectionTitle}>At a glance</Text>
+          <Pressable onPress={() => setTripCostVisible(true)} hitSlop={8}>
+            <Text style={styles.tripCostLink}>Trip cost calculator</Text>
+          </Pressable>
+        </View>
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
             <Text style={styles.statLabel}>Odometer</Text>
@@ -212,6 +229,17 @@ const makeStyles = (colors: ThemeColors) =>
       fontSize: 16,
       color: colors.textPrimary,
       marginBottom: spacing.sm,
+    },
+    cardHeaderRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: spacing.sm,
+    },
+    tripCostLink: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 12,
+      color: colors.accent,
     },
     statsGrid: {
       flexDirection: "row",
