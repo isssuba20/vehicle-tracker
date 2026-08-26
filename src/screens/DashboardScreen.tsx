@@ -73,24 +73,24 @@ export function DashboardScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.paper,
+    backgroundColor: colors.background,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.lg,
   },
   center: {
     flex: 1,
-    backgroundColor: colors.paper,
+    backgroundColor: colors.background,
     alignItems: "center",
     justifyContent: "center",
   },
   loadingText: {
     fontFamily: fonts.body,
-    color: colors.inkMuted,
+    color: colors.textMuted,
   },
   title: {
     fontFamily: fonts.display,
     fontSize: 28,
-    color: colors.ink,
+    color: colors.textPrimary,
     marginBottom: spacing.md,
   },
   empty: {
@@ -100,13 +100,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontFamily: fonts.bodySemiBold,
     fontSize: 16,
-    color: colors.ink,
+    color: colors.textPrimary,
     marginBottom: spacing.xs,
   },
   emptyBody: {
     fontFamily: fonts.body,
     fontSize: 14,
-    color: colors.inkMuted,
+    color: colors.textMuted,
     textAlign: "center",
     paddingHorizontal: spacing.lg,
   },
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     bottom: spacing.lg,
     left: spacing.md,
     right: spacing.md,
-    backgroundColor: colors.ink,
+    backgroundColor: colors.accent,
     borderRadius: radii.lg,
     paddingVertical: spacing.md,
     alignItems: "center",
@@ -123,6 +123,6 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontFamily: fonts.bodySemiBold,
     fontSize: 16,
-    color: colors.paper,
+    color: colors.onAccent,
   },
 });

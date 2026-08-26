@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sheet: {
-    backgroundColor: colors.paper,
+    backgroundColor: colors.background,
     borderTopLeftRadius: radii.lg,
     borderTopRightRadius: radii.lg,
     padding: spacing.lg,
@@ -199,13 +199,13 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: fonts.display,
     fontSize: 20,
-    color: colors.ink,
+    color: colors.textPrimary,
     marginBottom: spacing.md,
   },
   error: {
     fontFamily: fonts.body,
     fontSize: 13,
-    color: colors.overdue,
+    color: colors.overdueBright,
     marginBottom: spacing.sm,
   },
   actions: {
@@ -220,19 +220,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cancelButton: {
-    backgroundColor: colors.paperRaised,
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
   },
   cancelText: {
     fontFamily: fonts.bodySemiBold,
-    color: colors.ink,
+    color: colors.textPrimary,
   },
   saveButton: {
-    backgroundColor: colors.ink,
+    backgroundColor: colors.accent,
   },
   saveText: {
     fontFamily: fonts.bodySemiBold,
-    color: colors.paper,
+    color: colors.onAccent,
   },
 });

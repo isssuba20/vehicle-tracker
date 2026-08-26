@@ -146,29 +146,29 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.paper,
+    backgroundColor: colors.background,
   },
   title: {
     fontFamily: fonts.display,
     fontSize: 24,
-    color: colors.ink,
+    color: colors.textPrimary,
     marginBottom: spacing.lg,
   },
   sectionTitle: {
     fontFamily: fonts.display,
     fontSize: 16,
-    color: colors.ink,
+    color: colors.textPrimary,
     marginTop: spacing.sm,
     marginBottom: spacing.sm,
   },
   error: {
     fontFamily: fonts.body,
     fontSize: 13,
-    color: colors.overdue,
+    color: colors.overdueBright,
     marginBottom: spacing.sm,
   },
   saveButton: {
-    backgroundColor: colors.ink,
+    backgroundColor: colors.accent,
     borderRadius: radii.lg,
     paddingVertical: spacing.md,
     alignItems: "center",
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   saveText: {
     fontFamily: fonts.bodySemiBold,
     fontSize: 16,
-    color: colors.paper,
+    color: colors.onAccent,
   },
   deleteButton: {
     borderRadius: radii.lg,
@@ -190,6 +190,6 @@ const styles = StyleSheet.create({
   deleteText: {
     fontFamily: fonts.bodySemiBold,
     fontSize: 15,
-    color: colors.overdue,
+    color: colors.overdueBright,
   },
 });

@@ -29,7 +29,7 @@ export function VehicleDetailScreen({ route, navigation }: Props) {
   if (!vehicle) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color={colors.ink} />
+        <ActivityIndicator color={colors.accent} />
       </View>
     );
   }
@@ -53,11 +53,11 @@ export function VehicleDetailScreen({ route, navigation }: Props) {
 
       <Tab.Navigator
         screenOptions={{
-          tabBarActiveTintColor: colors.ink,
-          tabBarInactiveTintColor: colors.inkFaint,
-          tabBarIndicatorStyle: { backgroundColor: colors.ink },
+          tabBarActiveTintColor: colors.accent,
+          tabBarInactiveTintColor: colors.textFaint,
+          tabBarIndicatorStyle: { backgroundColor: colors.accent },
           tabBarLabelStyle: { fontFamily: fonts.bodySemiBold, fontSize: 13, textTransform: "none" },
-          tabBarStyle: { backgroundColor: colors.paper, elevation: 0, shadowOpacity: 0 },
+          tabBarStyle: { backgroundColor: colors.background, elevation: 0, shadowOpacity: 0 },
         }}
       >
         <Tab.Screen name="Overview" component={OverviewTab} />
@@ -71,14 +71,14 @@ export function VehicleDetailScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   center: {
     flex: 1,
-    backgroundColor: colors.paper,
+    backgroundColor: colors.background,
     alignItems: "center",
     justifyContent: "center",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.paper,
+    backgroundColor: colors.background,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
     paddingBottom: spacing.md,
@@ -86,12 +86,12 @@ const styles = StyleSheet.create({
   name: {
     fontFamily: fonts.display,
     fontSize: 22,
-    color: colors.ink,
+    color: colors.textPrimary,
   },
   subtitle: {
     fontFamily: fonts.body,
     fontSize: 13,
-    color: colors.inkMuted,
+    color: colors.textMuted,
     marginTop: 2,
   },
   editButton: {
@@ -104,6 +104,6 @@ const styles = StyleSheet.create({
   editButtonText: {
     fontFamily: fonts.bodySemiBold,
     fontSize: 13,
-    color: colors.ink,
+    color: colors.textPrimary,
   },
 });

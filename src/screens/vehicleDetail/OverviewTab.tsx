@@ -87,12 +87,12 @@ function DetailLine({ label, value }: { label: string; value: string }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.paper,
+    backgroundColor: colors.background,
     paddingHorizontal: spacing.md,
   },
   section: {
     marginTop: spacing.lg,
-    backgroundColor: colors.paperRaised,
+    backgroundColor: colors.surface,
     borderRadius: radii.lg,
     borderWidth: 1,
     borderColor: colors.border,
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontFamily: fonts.display,
     fontSize: 16,
-    color: colors.ink,
+    color: colors.textPrimary,
     marginBottom: spacing.sm,
   },
   statsGrid: {
@@ -115,14 +115,14 @@ const styles = StyleSheet.create({
   statLabel: {
     fontFamily: fonts.body,
     fontSize: 11,
-    color: colors.inkFaint,
+    color: colors.textFaint,
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   statValue: {
     fontFamily: fonts.mono,
     fontSize: 16,
-    color: colors.ink,
+    color: colors.textPrimary,
     marginTop: 2,
   },
   detailLine: {
@@ -133,11 +133,11 @@ const styles = StyleSheet.create({
   detailLabel: {
     fontFamily: fonts.body,
     fontSize: 14,
-    color: colors.inkMuted,
+    color: colors.textMuted,
   },
   detailValue: {
     fontFamily: fonts.mono,
     fontSize: 14,
-    color: colors.ink,
+    color: colors.textPrimary,
   },
 });

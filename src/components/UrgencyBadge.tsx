@@ -1,12 +1,12 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Urgency } from "@/types/models";
-import { colors, fonts, radii, urgencyBgColor, urgencyColor, urgencyLabel } from "@/theme/theme";
+import { fonts, radii, urgencyColor, urgencyOnColor, urgencyLabel } from "@/theme/theme";
 
 export function UrgencyBadge({ urgency }: { urgency: Urgency }) {
   return (
-    <View style={[styles.badge, { backgroundColor: urgencyBgColor(urgency) }]}>
-      <Text style={[styles.text, { color: urgencyColor(urgency) }]}>
+    <View style={[styles.badge, { backgroundColor: urgencyColor(urgency) }]}>
+      <Text style={[styles.text, { color: urgencyOnColor(urgency) }]}>
         {urgencyLabel(urgency)}
       </Text>
     </View>

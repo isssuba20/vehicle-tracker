@@ -11,11 +11,11 @@
       "url": "https://u.expo.dev/18b5fd07-ab23-47e8-898a-ff673e4fda35"
     },
     "orientation": "portrait",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "scheme": "vehicletracker",
-    "backgroundColor": "#F3EFE7",
+    "backgroundColor": "#22262B",
     "splash": {
-      "backgroundColor": "#F3EFE7"
+      "backgroundColor": "#22262B"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -27,7 +27,11 @@
     "android": {
       "package": "com.vehicletracker.app",
       "adaptiveIcon": {
-        "backgroundColor": "#F3EFE7"
+        "backgroundColor": "#22262B"
+      },
+      "navigationBar": {
+        "backgroundColor": "#22262B",
+        "barStyle": "light-content"
       }
     },
     "extra": {

@@ -56,10 +56,10 @@ export function ServiceTab() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.paper,
+    backgroundColor: colors.background,
   },
   row: {
-    backgroundColor: colors.paperRaised,
+    backgroundColor: colors.surface,
     borderRadius: radii.md,
     borderWidth: 1,
     borderColor: colors.border,
@@ -73,23 +73,23 @@ const styles = StyleSheet.create({
   type: {
     fontFamily: fonts.bodySemiBold,
     fontSize: 15,
-    color: colors.ink,
+    color: colors.textPrimary,
   },
   cost: {
     fontFamily: fonts.mono,
     fontSize: 14,
-    color: colors.ink,
+    color: colors.textPrimary,
   },
   meta: {
     fontFamily: fonts.mono,
     fontSize: 12,
-    color: colors.inkMuted,
+    color: colors.textMuted,
     marginTop: 4,
   },
   notes: {
     fontFamily: fonts.body,
     fontSize: 13,
-    color: colors.inkMuted,
+    color: colors.textMuted,
     marginTop: 6,
     fontStyle: "italic",
   },
@@ -100,13 +100,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontFamily: fonts.bodySemiBold,
     fontSize: 16,
-    color: colors.ink,
+    color: colors.textPrimary,
     marginBottom: spacing.xs,
   },
   emptyBody: {
     fontFamily: fonts.body,
     fontSize: 14,
-    color: colors.inkMuted,
+    color: colors.textMuted,
     textAlign: "center",
   },
   addButton: {
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     bottom: spacing.lg,
     left: spacing.md,
     right: spacing.md,
-    backgroundColor: colors.ink,
+    backgroundColor: colors.accent,
     borderRadius: radii.lg,
     paddingVertical: spacing.md,
     alignItems: "center",
@@ -122,6 +122,6 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontFamily: fonts.bodySemiBold,
     fontSize: 16,
-    color: colors.paper,
+    color: colors.onAccent,
   },
 });

@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: fonts.body,
     fontSize: 12,
-    color: colors.inkMuted,
+    color: colors.textMuted,
     marginBottom: 4,
   },
   input: {
@@ -52,11 +52,11 @@ const styles = StyleSheet.create({
     borderRadius: radii.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
-    backgroundColor: colors.paperRaised,
+    backgroundColor: colors.surface,
   },
   value: {
     fontFamily: fonts.mono,
     fontSize: 14,
-    color: colors.ink,
+    color: colors.textPrimary,
   },
 });

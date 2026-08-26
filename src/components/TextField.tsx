@@ -10,7 +10,7 @@ export function TextField({
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
-        placeholderTextColor={colors.inkFaint}
+        placeholderTextColor={colors.textFaint}
         style={styles.input}
         {...inputProps}
       />
@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: fonts.body,
     fontSize: 12,
-    color: colors.inkMuted,
+    color: colors.textMuted,
     marginBottom: 4,
   },
   input: {
@@ -34,9 +34,9 @@ const styles = StyleSheet.create({
     borderRadius: radii.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
-    backgroundColor: colors.paperRaised,
+    backgroundColor: colors.surface,
     fontFamily: fonts.body,
     fontSize: 14,
-    color: colors.ink,
+    color: colors.textPrimary,
   },
 });

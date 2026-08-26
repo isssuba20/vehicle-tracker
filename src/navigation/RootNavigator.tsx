@@ -16,9 +16,9 @@ function TabsNavigator() {
     <Tabs.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.ink,
-        tabBarInactiveTintColor: colors.inkFaint,
-        tabBarStyle: { backgroundColor: colors.paperRaised, borderTopColor: colors.border },
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.textFaint,
+        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
         tabBarLabelStyle: { fontFamily: fonts.bodyMedium, fontSize: 12 },
       }}
     >
@@ -32,8 +32,8 @@ export function RootNavigator() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: colors.paper },
-        headerTintColor: colors.ink,
+        headerStyle: { backgroundColor: colors.background },
+        headerTintColor: colors.textPrimary,
         headerTitleStyle: { fontFamily: fonts.bodySemiBold },
         headerShadowVisible: false,
       }}

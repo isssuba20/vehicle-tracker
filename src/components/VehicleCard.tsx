@@ -51,7 +51,7 @@ export function VehicleCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.paperRaised,
+    backgroundColor: colors.surface,
     borderRadius: radii.lg,
     padding: spacing.md,
     marginBottom: spacing.md,
@@ -68,12 +68,12 @@ const styles = StyleSheet.create({
   name: {
     fontFamily: fonts.display,
     fontSize: 20,
-    color: colors.ink,
+    color: colors.textPrimary,
   },
   subtitle: {
     fontFamily: fonts.body,
     fontSize: 13,
-    color: colors.inkMuted,
+    color: colors.textMuted,
     marginTop: 2,
   },
   dots: {
@@ -88,14 +88,14 @@ const styles = StyleSheet.create({
   statLabel: {
     fontFamily: fonts.body,
     fontSize: 11,
-    color: colors.inkFaint,
+    color: colors.textFaint,
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   statValue: {
     fontFamily: fonts.mono,
     fontSize: 16,
-    color: colors.ink,
+    color: colors.textPrimary,
     marginTop: 2,
   },
 });

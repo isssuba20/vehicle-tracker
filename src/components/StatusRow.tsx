@@ -39,18 +39,18 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: fonts.bodySemiBold,
     fontSize: 15,
-    color: colors.ink,
+    color: colors.textPrimary,
   },
   date: {
     fontFamily: fonts.mono,
     fontSize: 13,
-    color: colors.inkMuted,
+    color: colors.textMuted,
     marginTop: 2,
   },
   extra: {
     fontFamily: fonts.body,
     fontSize: 12,
-    color: colors.inkFaint,
+    color: colors.textFaint,
     marginTop: 2,
   },
 });

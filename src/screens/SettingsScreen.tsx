@@ -89,18 +89,18 @@ export function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.paper,
+    backgroundColor: colors.background,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.lg,
   },
   title: {
     fontFamily: fonts.display,
     fontSize: 28,
-    color: colors.ink,
+    color: colors.textPrimary,
     marginBottom: spacing.md,
   },
   section: {
-    backgroundColor: colors.paperRaised,
+    backgroundColor: colors.surface,
     borderRadius: radii.lg,
     borderWidth: 1,
     borderColor: colors.border,
@@ -110,13 +110,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontFamily: fonts.display,
     fontSize: 16,
-    color: colors.ink,
+    color: colors.textPrimary,
     marginBottom: 4,
   },
   sectionBody: {
     fontFamily: fonts.body,
     fontSize: 13,
-    color: colors.inkMuted,
+    color: colors.textMuted,
     marginBottom: spacing.sm,
   },
   memberRow: {
@@ -130,10 +130,10 @@ const styles = StyleSheet.create({
   memberName: {
     fontFamily: fonts.bodyMedium,
     fontSize: 14,
-    color: colors.ink,
+    color: colors.textPrimary,
   },
   roleBadge: {
-    backgroundColor: colors.paper,
+    backgroundColor: colors.background,
     borderRadius: radii.pill,
     paddingHorizontal: 10,
     paddingVertical: 3,
@@ -141,11 +141,11 @@ const styles = StyleSheet.create({
   roleText: {
     fontFamily: fonts.body,
     fontSize: 11,
-    color: colors.inkMuted,
+    color: colors.textMuted,
     textTransform: "capitalize",
   },
   inviteButton: {
-    backgroundColor: colors.ink,
+    backgroundColor: colors.accent,
     borderRadius: radii.md,
     paddingVertical: spacing.sm + 2,
     alignItems: "center",
@@ -153,31 +153,31 @@ const styles = StyleSheet.create({
   inviteButtonText: {
     fontFamily: fonts.bodySemiBold,
     fontSize: 14,
-    color: colors.paper,
+    color: colors.onAccent,
   },
   codeBox: {
     marginTop: spacing.md,
     padding: spacing.md,
-    backgroundColor: colors.okBg,
+    backgroundColor: colors.ok,
     borderRadius: radii.md,
     alignItems: "center",
   },
   codeLabel: {
     fontFamily: fonts.body,
     fontSize: 12,
-    color: colors.inkMuted,
+    color: colors.textPrimary,
   },
   code: {
     fontFamily: fonts.mono,
     fontSize: 24,
     letterSpacing: 4,
-    color: colors.ok,
+    color: colors.textPrimary,
     marginTop: 4,
   },
   buildInfo: {
     fontFamily: fonts.mono,
     fontSize: 11,
-    color: colors.inkFaint,
+    color: colors.textFaint,
     textAlign: "center",
     marginTop: spacing.sm,
     marginBottom: spacing.lg,

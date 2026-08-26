@@ -1,6 +1,6 @@
 import "react-native-gesture-handler";
 import React from "react";
-import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
+import { NavigationContainer, DarkTheme } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
@@ -24,12 +24,13 @@ import { RootNavigator } from "@/navigation/RootNavigator";
 import { colors } from "@/theme/theme";
 
 const navTheme = {
-  ...DefaultTheme,
+  ...DarkTheme,
   colors: {
-    ...DefaultTheme.colors,
-    background: colors.paper,
-    card: colors.paper,
-    text: colors.ink,
+    ...DarkTheme.colors,
+    primary: colors.accent,
+    background: colors.background,
+    card: colors.background,
+    text: colors.textPrimary,
     border: colors.border,
   },
 };
@@ -43,8 +44,8 @@ export default function App() {
 
   if (!fontsReady) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.paper }}>
-        <ActivityIndicator color={colors.ink} />
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
+        <ActivityIndicator color={colors.accent} />
       </View>
     );
   }
@@ -52,7 +53,7 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer theme={navTheme}>
-        <StatusBar style="dark" />
+        <StatusBar style="light" />
         <RootNavigator />
       </NavigationContainer>
     </GestureHandlerRootView>

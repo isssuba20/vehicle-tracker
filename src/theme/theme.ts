@@ -1,19 +1,31 @@
 import { Urgency } from "@/types/models";
 
 export const colors = {
-  paper: "#F3EFE7",
-  paperRaised: "#FFFFFF",
-  ink: "#22262B",
-  inkMuted: "#5B5F66",
-  inkFaint: "#8B8E94",
-  border: "#DFD8C8",
+  background: "#22262B",
+  surface: "#2B3036",
+  border: "#454B53",
 
+  textPrimary: "#F3EFE7",
+  textMuted: "#9A958C",
+  textFaint: "#8A8579",
+
+  accent: "#E2A335",
+  onAccent: "#22262B",
+
+  // Locked identity colors — used for badges, dots, and other small
+  // accents where the exact brand hue matters. Not legible as direct
+  // foreground text on the dark background/surface (see *Bright below).
   ok: "#2E6B63",
-  okBg: "#E4EEEC",
   dueSoon: "#E2A335",
-  dueSoonBg: "#FBF0DC",
   overdue: "#C1483A",
-  overdueBg: "#F6E1DD",
+
+  // Brighter same-family variants for the few spots where a status
+  // color is used as plain text directly on background/surface
+  // (error copy, the "Delete vehicle" label, a good km/L reading).
+  // The locked colors above fail 4.5:1 in that role on this dark
+  // theme; these pass ~4.6–5.4:1 while staying visually paired.
+  okBright: "#4FA89C",
+  overdueBright: "#E06A56",
 } as const;
 
 export const fonts = {
@@ -47,10 +59,10 @@ export function urgencyColor(u: Urgency): string {
   return colors.ok;
 }
 
-export function urgencyBgColor(u: Urgency): string {
-  if (u === "overdue") return colors.overdueBg;
-  if (u === "due_soon") return colors.dueSoonBg;
-  return colors.okBg;
+/** Text color to use on top of a solid urgencyColor() fill (e.g. a badge chip). */
+export function urgencyOnColor(u: Urgency): string {
+  if (u === "due_soon") return colors.onAccent;
+  return colors.textPrimary;
 }
 
 export function urgencyLabel(u: Urgency): string {
