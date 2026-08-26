@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Paths, File, Directory } from "expo-file-system";
@@ -18,7 +19,10 @@ function persistPickedImage(sourceUri: string): string {
 }
 
 export function usePhotoPicker(photoUri: string | undefined, onChange: (uri: string | undefined) => void) {
+  const [sheetVisible, setSheetVisible] = useState(false);
+
   async function pickFromLibrary() {
+    setSheetVisible(false);
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
       Alert.alert("Photos access needed", "Allow photo library access in Settings to choose a picture.");
@@ -36,6 +40,7 @@ export function usePhotoPicker(photoUri: string | undefined, onChange: (uri: str
   }
 
   async function takePhoto() {
+    setSheetVisible(false);
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
       Alert.alert("Camera access needed", "Allow camera access in Settings to take a picture.");
@@ -51,17 +56,27 @@ export function usePhotoPicker(photoUri: string | undefined, onChange: (uri: str
     }
   }
 
-  function openPicker() {
-    const options: { text: string; onPress?: () => void; style?: "cancel" | "destructive" }[] = [
-      { text: "Take photo", onPress: takePhoto },
-      { text: "Choose from library", onPress: pickFromLibrary },
-    ];
-    if (photoUri) {
-      options.push({ text: "Remove photo", onPress: () => onChange(undefined), style: "destructive" });
-    }
-    options.push({ text: "Cancel", style: "cancel" });
-    Alert.alert("Vehicle photo", undefined, options);
+  function confirmRemove() {
+    setSheetVisible(false);
+    Alert.alert("Remove this photo?", "You can add a new one anytime.", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Remove", style: "destructive", onPress: () => onChange(undefined) },
+    ]);
   }
 
-  return { openPicker };
+  function openPicker() {
+    setSheetVisible(true);
+  }
+
+  return {
+    openPicker,
+    sheetProps: {
+      visible: sheetVisible,
+      hasPhoto: !!photoUri,
+      onTakePhoto: takePhoto,
+      onPickLibrary: pickFromLibrary,
+      onRemove: confirmRemove,
+      onClose: () => setSheetVisible(false),
+    },
+  };
 }

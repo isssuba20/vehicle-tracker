@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { usePhotoPicker } from "@/utils/usePhotoPicker";
+import { PhotoActionSheet } from "./PhotoActionSheet";
 
 export function PhotoPicker({
   photoUri,
@@ -14,7 +15,7 @@ export function PhotoPicker({
 }) {
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
-  const { openPicker } = usePhotoPicker(photoUri, onChange);
+  const { openPicker, sheetProps } = usePhotoPicker(photoUri, onChange);
 
   return (
     <View style={styles.container}>
@@ -29,6 +30,7 @@ export function PhotoPicker({
           </View>
         )}
       </Pressable>
+      <PhotoActionSheet {...sheetProps} />
     </View>
   );
 }

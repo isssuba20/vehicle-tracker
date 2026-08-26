@@ -8,6 +8,7 @@ import { dateUrgency, pmsUrgency } from "@/utils/urgency";
 import { formatKm } from "@/utils/format";
 import { EfficiencyDisplay } from "@/utils/vehicleEfficiencyDisplay";
 import { usePhotoPicker } from "@/utils/usePhotoPicker";
+import { PhotoActionSheet } from "./PhotoActionSheet";
 import { UrgencyDot } from "./UrgencyDot";
 
 export function VehicleCard({
@@ -23,7 +24,7 @@ export function VehicleCard({
 }) {
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
-  const { openPicker } = usePhotoPicker(vehicle.photoUri, onPhotoChange);
+  const { openPicker, sheetProps } = usePhotoPicker(vehicle.photoUri, onPhotoChange);
 
   const registration = dateUrgency(vehicle.registrationExpiry);
   const insurance = dateUrgency(vehicle.insuranceExpiry);
@@ -64,6 +65,7 @@ export function VehicleCard({
           </Text>
         </View>
       </View>
+      <PhotoActionSheet {...sheetProps} />
     </Pressable>
   );
 }
