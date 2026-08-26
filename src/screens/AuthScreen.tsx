@@ -28,7 +28,7 @@ export function AuthScreen() {
         await signUp(email.trim(), password);
         Alert.alert(
           "Check your email",
-          "We sent a confirmation link — verify your address, then sign in."
+          "We sent a confirmation link — tap it on this device to finish signing in."
         );
         setMode("signIn");
       }
@@ -46,6 +46,7 @@ export function AuthScreen() {
     >
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>Garahe</Text>
+        <Text style={styles.tagline}>Household Fleet Tracker</Text>
         <Text style={styles.subtitle}>
           {mode === "signIn" ? "Sign in to your household" : "Create your account"}
         </Text>
@@ -84,6 +85,8 @@ export function AuthScreen() {
             {mode === "signIn" ? "New here? Create an account" : "Already have an account? Sign in"}
           </Text>
         </Pressable>
+
+        <Text style={styles.poweredBy}>Powered by BizVenMa</Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -103,16 +106,26 @@ const makeStyles = (colors: ThemeColors) =>
     },
     title: {
       fontFamily: fonts.display,
-      fontSize: 28,
-      color: colors.textPrimary,
+      fontSize: 34,
+      letterSpacing: 0.5,
+      color: colors.accent,
       textAlign: "center",
-      marginBottom: spacing.xs,
+    },
+    tagline: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      letterSpacing: 0.5,
+      textTransform: "uppercase",
+      color: colors.textMuted,
+      textAlign: "center",
+      marginTop: 4,
     },
     subtitle: {
       fontFamily: fonts.body,
       fontSize: 14,
       color: colors.textMuted,
       textAlign: "center",
+      marginTop: spacing.lg,
       marginBottom: spacing.xl,
     },
     primaryButton: {
@@ -135,5 +148,12 @@ const makeStyles = (colors: ThemeColors) =>
       fontFamily: fonts.bodyMedium,
       fontSize: 13,
       color: colors.accent,
+    },
+    poweredBy: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.textFaint,
+      textAlign: "center",
+      marginTop: spacing.xl,
     },
   });

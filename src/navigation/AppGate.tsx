@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, Linking } from "react-native";
 import { RootNavigator } from "./RootNavigator";
 import { AuthScreen } from "@/screens/AuthScreen";
 import { OnboardingScreen } from "@/screens/OnboardingScreen";
@@ -26,6 +26,7 @@ export function AppGate() {
   const authInit = useAuthStore((s) => s.init);
   const authInitializing = useAuthStore((s) => s.initializing);
   const session = useAuthStore((s) => s.session);
+  const handleAuthDeepLink = useAuthStore((s) => s.handleAuthDeepLink);
 
   const appReady = useAppStore((s) => s.ready);
   const groupIds = useAppStore((s) => s.groupIds);
@@ -34,6 +35,17 @@ export function AppGate() {
 
   useEffect(() => {
     authInit();
+  }, []);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+    Linking.getInitialURL().then((url) => {
+      if (url) handleAuthDeepLink(url);
+    });
+    const subscription = Linking.addEventListener("url", ({ url }) => {
+      handleAuthDeepLink(url);
+    });
+    return () => subscription.remove();
   }, []);
 
   const userId = session?.user.id;

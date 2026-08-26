@@ -117,6 +117,17 @@ invite code), and real invite redemption to replace the local stub.
   household's devices yet. Treating this as a fast-follow rather than
   blocking the core backend swap on it.
 
+## Email confirmation: deep link back into the app
+
+Sign-up confirmation emails now redirect to `vehicletracker://auth-callback`
+(the app's existing scheme, already in app.json) instead of Supabase's
+default page, using the PKCE flow so the auth code survives the OS's
+link handoff. **This needs one manual step in the Supabase dashboard to
+actually work**: Authentication → URL Configuration → Redirect URLs →
+add `vehicletracker://auth-callback` to the allow list. Without that,
+Supabase will reject the custom redirect and fall back to its default
+(broken) behavior.
+
 ## Card usage in Vehicle Detail → Overview tab
 
 The brief says not to wrap every section in a card. Kept "At a glance" (the
