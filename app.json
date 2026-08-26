@@ -17,7 +17,9 @@
     "splash": {
       "backgroundColor": "#F3EFE7"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.vehicletracker.app"
