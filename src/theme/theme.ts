@@ -3,6 +3,7 @@ import { Urgency } from "@/types/models";
 export interface ThemeColors {
   background: string;
   surface: string;
+  surfaceElevated: string;
   border: string;
 
   textPrimary: string;
@@ -10,6 +11,8 @@ export interface ThemeColors {
   textFaint: string;
 
   accent: string;
+  accentHover: string;
+  accentMuted: string;
   onAccent: string;
 
   // Locked identity colors — same in both modes, used for badges, dots,
@@ -27,40 +30,57 @@ export interface ThemeColors {
   overdueBright: string;
 }
 
+/**
+ * Premium automotive palette: deep charcoal foundation, warm metallic
+ * gold accent used sparingly, off-white type. This is the app's primary,
+ * fully-specified look.
+ */
 export const darkColors: ThemeColors = {
-  background: "#22262B",
-  surface: "#2B3036",
-  border: "#454B53",
+  background: "#111416",
+  surface: "#191D20",
+  surfaceElevated: "#202529",
+  border: "#303538",
 
-  textPrimary: "#F3EFE7",
-  textMuted: "#9A958C",
-  textFaint: "#8A8579",
+  textPrimary: "#F2F0EA",
+  textMuted: "#A7AAA8",
+  textFaint: "#6F7473",
 
-  accent: "#E2A335",
-  onAccent: "#22262B",
+  accent: "#D9A23A",
+  accentHover: "#E7B34D",
+  accentMuted: "#A77A2B",
+  onAccent: "#111416",
 
   ok: "#2E6B63",
-  dueSoon: "#E2A335",
+  dueSoon: "#D9A23A",
   overdue: "#C1483A",
 
   okBright: "#4FA89C",
   overdueBright: "#E06A56",
 };
 
+/**
+ * Light complement to the dark palette above, derived rather than
+ * specified: same restraint and the same gold family, adapted so a full
+ * gold accent (which reads poorly as foreground text/icon color on a
+ * light ground) stays legible — see DECISIONS.md.
+ */
 export const lightColors: ThemeColors = {
-  background: "#F3EFE7",
+  background: "#F5F2EA",
   surface: "#FFFFFF",
-  border: "#DFD8C8",
+  surfaceElevated: "#EFEAE0",
+  border: "#DED7C8",
 
-  textPrimary: "#22262B",
-  textMuted: "#5B5F66",
-  textFaint: "#8B8E94",
+  textPrimary: "#15181A",
+  textMuted: "#5B5F5D",
+  textFaint: "#83867F",
 
-  accent: "#E2A335",
-  onAccent: "#22262B",
+  accent: "#B8862E",
+  accentHover: "#C89434",
+  accentMuted: "#8C6423",
+  onAccent: "#15181A",
 
   ok: "#2E6B63",
-  dueSoon: "#E2A335",
+  dueSoon: "#B8862E",
   overdue: "#C1483A",
 
   okBright: "#2E6B63",
@@ -68,13 +88,13 @@ export const lightColors: ThemeColors = {
 };
 
 export const fonts = {
-  display: "Oswald_600SemiBold",
-  displayMedium: "Oswald_500Medium",
+  display: "Manrope_600SemiBold",
+  displayMedium: "Manrope_500Medium",
   mono: "JetBrainsMono_500Medium",
   monoRegular: "JetBrainsMono_400Regular",
-  body: "Inter_400Regular",
-  bodyMedium: "Inter_500Medium",
-  bodySemiBold: "Inter_600SemiBold",
+  body: "Manrope_400Regular",
+  bodyMedium: "Manrope_500Medium",
+  bodySemiBold: "Manrope_600SemiBold",
 } as const;
 
 export const spacing = {
@@ -85,18 +105,19 @@ export const spacing = {
   xl: 32,
 } as const;
 
+// Restrained corner radii — a premium control surface, not a rounded
+// consumer-app look.
 export const radii = {
-  sm: 8,
-  md: 14,
-  lg: 20,
-  pill: 999,
+  sm: 6,
+  md: 8,
+  lg: 10,
 } as const;
 
 // Status colors (ok/dueSoon/overdue) are identical in both themes, so
 // urgency badges/dots don't need to know the current mode.
 const STATUS = { ok: darkColors.ok, dueSoon: darkColors.dueSoon, overdue: darkColors.overdue };
-const STATUS_TEXT_LIGHT = "#F3EFE7";
-const STATUS_TEXT_DARK = "#22262B";
+const STATUS_TEXT_LIGHT = "#F2F0EA";
+const STATUS_TEXT_DARK = "#111416";
 
 export function urgencyColor(u: Urgency): string {
   if (u === "overdue") return STATUS.overdue;

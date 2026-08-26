@@ -15,7 +15,7 @@ export function ThemeToggle({ colors }: { colors: ThemeColors }) {
       style={[styles.button, { backgroundColor: colors.surface, borderColor: colors.border }]}
     >
       <Ionicons
-        name={mode === "dark" ? "moon" : "sunny"}
+        name={mode === "dark" ? "moon-outline" : "sunny-outline"}
         size={18}
         color={colors.accent}
       />

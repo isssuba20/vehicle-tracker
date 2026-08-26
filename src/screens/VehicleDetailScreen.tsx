@@ -5,7 +5,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/navigation/types";
 import { useAppStore } from "@/state/store";
 import { Vehicle } from "@/types/models";
-import { fonts, spacing, ThemeColors } from "@/theme/theme";
+import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { VehicleProvider } from "./vehicleDetail/VehicleContext";
@@ -115,7 +115,7 @@ const makeStyles = (colors: ThemeColors) =>
     editButton: {
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.xs + 2,
-      borderRadius: 999,
+      borderRadius: radii.sm,
       borderWidth: 1,
       borderColor: colors.border,
     },

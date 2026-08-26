@@ -66,3 +66,30 @@ status is overdue.
 - Auth: there's a single hardcoded `CURRENT_USER_ID` ("user-1", seeded as
   "Melissa") — no real login screen. A synced backend will need real auth
   before groups mean anything across devices.
+
+## Premium automotive theme: light mode derived, not specified
+
+The design brief gave a complete, exact palette (`#111416` background,
+`#D9A23A` gold accent, etc.) but it's clearly dark-mode-first ("deep
+charcoal foundation"). I used those values as-is for `darkColors` and
+derived a `lightColors` complement using the same restraint and gold
+family, rather than asking before touching light mode.
+
+One real problem came up while deriving it: the raw gold `#D9A23A` on a
+light (`#F5F2EA`) background computes to only ~2:1 contrast — unreadable as
+a foreground/icon color. I deepened `lightColors.accent` to `#B8862E`
+(~2.7–3:1), which is still short of the ~3:1 AA threshold for UI
+components/large text. It's used sparingly (small icons, accent text, not
+body copy), so I judged it an acceptable tradeoff rather than pushing the
+gold dark enough to lose the "warm metallic gold" identity — but it's worth
+a look on a real light-mode screen. If it reads poorly, the fix is a slightly
+darker `accent` in `lightColors` (theme.ts) with no other code changes.
+
+## Card usage in Vehicle Detail → Overview tab
+
+The brief says not to wrap every section in a card. Kept "At a glance" (the
+four key stat numbers — odometer, efficiency, purchase date/price) as a
+bordered card, since it's a genuinely distinct grouping of headline
+numbers. Flattened "Renewals & Maintenance," "Details," and "EV details"
+to plain sections with a hairline top divider instead of a full
+card/border — they're closer to a continuous list than a separate module.

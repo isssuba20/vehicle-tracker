@@ -36,7 +36,7 @@ export function OverviewTab() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: spacing.xl }}>
-      <View style={styles.section}>
+      <View style={styles.plainSection}>
         <Text style={styles.sectionTitle}>Renewals & Maintenance</Text>
         <StatusRow label="Registration" dateLabel={formatDate(vehicle.registrationExpiry)} urgency={registration} />
         <StatusRow label="Insurance" dateLabel={formatDate(vehicle.insuranceExpiry)} urgency={insurance} />
@@ -48,7 +48,7 @@ export function OverviewTab() {
         />
       </View>
 
-      <View style={styles.section}>
+      <View style={styles.card}>
         <Text style={styles.sectionTitle}>At a glance</Text>
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
@@ -72,7 +72,7 @@ export function OverviewTab() {
         </View>
       </View>
 
-      <View style={styles.section}>
+      <View style={styles.plainSection}>
         <Text style={styles.sectionTitle}>Details</Text>
         <DetailLine styles={styles} label="Plate number" value={vehicle.plateNumber} />
         <DetailLine styles={styles} label="VIN" value={vehicle.vin} />
@@ -80,7 +80,7 @@ export function OverviewTab() {
       </View>
 
       {isHybridOrElectric && (
-        <View style={styles.section}>
+        <View style={styles.plainSection}>
           <Text style={styles.sectionTitle}>EV details</Text>
           {vehicle.batteryCapacityKwh != null && (
             <DetailLine styles={styles} label="Battery capacity" value={`${vehicle.batteryCapacityKwh} kWh`} />
@@ -133,13 +133,19 @@ const makeStyles = (colors: ThemeColors) =>
       backgroundColor: colors.background,
       paddingHorizontal: spacing.md,
     },
-    section: {
+    card: {
       marginTop: spacing.lg,
       backgroundColor: colors.surface,
       borderRadius: radii.lg,
       borderWidth: 1,
       borderColor: colors.border,
       padding: spacing.md,
+    },
+    plainSection: {
+      marginTop: spacing.lg,
+      paddingTop: spacing.md,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
     },
     sectionTitle: {
       fontFamily: fonts.display,

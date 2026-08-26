@@ -30,8 +30,8 @@ function TabsNavigator() {
         name="Dashboard"
         component={DashboardScreen}
         options={{
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? "speedometer" : "speedometer-outline"} size={size} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="speedometer-outline" size={size} color={color} />
           ),
         }}
       />
@@ -39,8 +39,8 @@ function TabsNavigator() {
         name="Settings"
         component={SettingsScreen}
         options={{
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? "settings" : "settings-outline"} size={size} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="settings-outline" size={size} color={color} />
           ),
         }}
       />

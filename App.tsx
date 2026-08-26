@@ -4,21 +4,16 @@ import { NavigationContainer, DarkTheme, DefaultTheme } from "@react-navigation/
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
-  useFonts as useOswald,
-  Oswald_500Medium,
-  Oswald_600SemiBold,
-} from "@expo-google-fonts/oswald";
-import {
   useFonts as useJetBrainsMono,
   JetBrainsMono_400Regular,
   JetBrainsMono_500Medium,
 } from "@expo-google-fonts/jetbrains-mono";
 import {
-  useFonts as useInter,
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-} from "@expo-google-fonts/inter";
+  useFonts as useManrope,
+  Manrope_400Regular,
+  Manrope_500Medium,
+  Manrope_600SemiBold,
+} from "@expo-google-fonts/manrope";
 import { useFonts as useIconFont } from "expo-font";
 import { Ionicons } from "@expo/vector-icons";
 import { View, ActivityIndicator } from "react-native";
@@ -27,9 +22,8 @@ import { RootNavigator } from "@/navigation/RootNavigator";
 import { useThemeStore } from "@/theme/useThemeStore";
 
 export default function App() {
-  const [oswaldLoaded] = useOswald({ Oswald_500Medium, Oswald_600SemiBold });
   const [monoLoaded] = useJetBrainsMono({ JetBrainsMono_400Regular, JetBrainsMono_500Medium });
-  const [interLoaded] = useInter({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold });
+  const [manropeLoaded] = useManrope({ Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold });
   const [iconsLoaded] = useIconFont(Ionicons.font);
 
   const { mode, colors, hydrated, init } = useThemeStore();
@@ -38,7 +32,7 @@ export default function App() {
     init();
   }, []);
 
-  const fontsReady = oswaldLoaded && monoLoaded && interLoaded && iconsLoaded && hydrated;
+  const fontsReady = monoLoaded && manropeLoaded && iconsLoaded && hydrated;
 
   if (!fontsReady) {
     return (

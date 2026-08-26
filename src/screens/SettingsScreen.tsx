@@ -152,8 +152,8 @@ const makeStyles = (colors: ThemeColors) =>
       color: colors.textPrimary,
     },
     roleBadge: {
-      backgroundColor: colors.background,
-      borderRadius: radii.pill,
+      backgroundColor: colors.surfaceElevated,
+      borderRadius: radii.sm,
       paddingHorizontal: 10,
       paddingVertical: 3,
     },
