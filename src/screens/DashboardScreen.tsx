@@ -1,15 +1,21 @@
 import React, { useEffect, useMemo } from "react";
 import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { TabScreenProps } from "@/navigation/types";
 import { useAppStore } from "@/state/store";
 import { VehicleCard } from "@/components/VehicleCard";
-import { colors, fonts, radii, spacing } from "@/theme/theme";
-import { latestKmPerLiter } from "@/utils/fuelEfficiency";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
+import { useThemeStore } from "@/theme/useThemeStore";
+import { latestKmPerLiter, LatestEfficiency } from "@/utils/fuelEfficiency";
 
 type Props = TabScreenProps<"Dashboard">;
 
 export function DashboardScreen({ navigation }: Props) {
   const { ready, vehicles, init, fuelByVehicle, loadVehicleDetail } = useAppStore();
+  const colors = useThemeStore((s) => s.colors);
+  const styles = makeStyles(colors);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     init();
@@ -22,7 +28,7 @@ export function DashboardScreen({ navigation }: Props) {
   }, [vehicles.length]);
 
   const kmPerLiterByVehicle = useMemo(() => {
-    const map: Record<string, number | null> = {};
+    const map: Record<string, LatestEfficiency> = {};
     for (const v of vehicles) {
       map[v.id] = latestKmPerLiter(fuelByVehicle[v.id] ?? []);
     }
@@ -39,7 +45,10 @@ export function DashboardScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>My Vehicles</Text>
+      <View style={styles.titleRow}>
+        <Text style={styles.title}>My Vehicles</Text>
+        <ThemeToggle colors={colors} />
+      </View>
       <FlatList
         data={vehicles}
         keyExtractor={(v) => v.id}
@@ -55,13 +64,13 @@ export function DashboardScreen({ navigation }: Props) {
         renderItem={({ item }) => (
           <VehicleCard
             vehicle={item}
-            latestKmPerLiter={kmPerLiterByVehicle[item.id] ?? null}
+            efficiency={kmPerLiterByVehicle[item.id] ?? { kmPerLiter: null, implausible: false }}
             onPress={() => navigation.navigate("VehicleDetail", { vehicleId: item.id })}
           />
         )}
       />
       <Pressable
-        style={styles.addButton}
+        style={[styles.addButton, { bottom: spacing.md + insets.bottom }]}
         onPress={() => navigation.navigate("AddEditVehicle", {})}
       >
         <Text style={styles.addButtonText}>+ Add a vehicle</Text>
@@ -70,59 +79,64 @@ export function DashboardScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.paper,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.lg,
-  },
-  center: {
-    flex: 1,
-    backgroundColor: colors.paper,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  loadingText: {
-    fontFamily: fonts.body,
-    color: colors.inkMuted,
-  },
-  title: {
-    fontFamily: fonts.display,
-    fontSize: 28,
-    color: colors.ink,
-    marginBottom: spacing.md,
-  },
-  empty: {
-    paddingVertical: spacing.xl,
-    alignItems: "center",
-  },
-  emptyTitle: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 16,
-    color: colors.ink,
-    marginBottom: spacing.xs,
-  },
-  emptyBody: {
-    fontFamily: fonts.body,
-    fontSize: 14,
-    color: colors.inkMuted,
-    textAlign: "center",
-    paddingHorizontal: spacing.lg,
-  },
-  addButton: {
-    position: "absolute",
-    bottom: spacing.lg,
-    left: spacing.md,
-    right: spacing.md,
-    backgroundColor: colors.ink,
-    borderRadius: radii.lg,
-    paddingVertical: spacing.md,
-    alignItems: "center",
-  },
-  addButtonText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 16,
-    color: colors.paper,
-  },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      paddingHorizontal: spacing.md,
+      paddingTop: spacing.lg,
+    },
+    center: {
+      flex: 1,
+      backgroundColor: colors.background,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    loadingText: {
+      fontFamily: fonts.body,
+      color: colors.textMuted,
+    },
+    titleRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: spacing.md,
+    },
+    title: {
+      fontFamily: fonts.display,
+      fontSize: 28,
+      color: colors.textPrimary,
+    },
+    empty: {
+      paddingVertical: spacing.xl,
+      alignItems: "center",
+    },
+    emptyTitle: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 16,
+      color: colors.textPrimary,
+      marginBottom: spacing.xs,
+    },
+    emptyBody: {
+      fontFamily: fonts.body,
+      fontSize: 14,
+      color: colors.textMuted,
+      textAlign: "center",
+      paddingHorizontal: spacing.lg,
+    },
+    addButton: {
+      position: "absolute",
+      left: spacing.md,
+      right: spacing.md,
+      backgroundColor: colors.accent,
+      borderRadius: radii.lg,
+      paddingVertical: spacing.md,
+      alignItems: "center",
+    },
+    addButtonText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 16,
+      color: colors.onAccent,
+    },
+  });

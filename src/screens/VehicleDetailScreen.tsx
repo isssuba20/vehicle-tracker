@@ -5,7 +5,9 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/navigation/types";
 import { useAppStore } from "@/state/store";
 import { Vehicle } from "@/types/models";
-import { colors, fonts, spacing } from "@/theme/theme";
+import { fonts, spacing, ThemeColors } from "@/theme/theme";
+import { useThemeStore } from "@/theme/useThemeStore";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { VehicleProvider } from "./vehicleDetail/VehicleContext";
 import { OverviewTab } from "./vehicleDetail/OverviewTab";
 import { ServiceTab } from "./vehicleDetail/ServiceTab";
@@ -18,6 +20,8 @@ type Props = NativeStackScreenProps<RootStackParamList, "VehicleDetail">;
 export function VehicleDetailScreen({ route, navigation }: Props) {
   const { vehicleId } = route.params;
   const vehicles = useAppStore((s) => s.vehicles);
+  const colors = useThemeStore((s) => s.colors);
+  const styles = makeStyles(colors);
   const [vehicle, setVehicle] = useState<Vehicle | undefined>(
     vehicles.find((v) => v.id === vehicleId)
   );
@@ -29,7 +33,7 @@ export function VehicleDetailScreen({ route, navigation }: Props) {
   if (!vehicle) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color={colors.ink} />
+        <ActivityIndicator color={colors.accent} />
       </View>
     );
   }
@@ -43,21 +47,24 @@ export function VehicleDetailScreen({ route, navigation }: Props) {
             {vehicle.year} {vehicle.make} {vehicle.model} · {vehicle.plateNumber}
           </Text>
         </View>
-        <Pressable
-          style={styles.editButton}
-          onPress={() => navigation.navigate("AddEditVehicle", { vehicleId: vehicle.id })}
-        >
-          <Text style={styles.editButtonText}>Edit</Text>
-        </Pressable>
+        <View style={styles.headerActions}>
+          <ThemeToggle colors={colors} />
+          <Pressable
+            style={styles.editButton}
+            onPress={() => navigation.navigate("AddEditVehicle", { vehicleId: vehicle.id })}
+          >
+            <Text style={styles.editButtonText}>Edit</Text>
+          </Pressable>
+        </View>
       </View>
 
       <Tab.Navigator
         screenOptions={{
-          tabBarActiveTintColor: colors.ink,
-          tabBarInactiveTintColor: colors.inkFaint,
-          tabBarIndicatorStyle: { backgroundColor: colors.ink },
+          tabBarActiveTintColor: colors.accent,
+          tabBarInactiveTintColor: colors.textFaint,
+          tabBarIndicatorStyle: { backgroundColor: colors.accent },
           tabBarLabelStyle: { fontFamily: fonts.bodySemiBold, fontSize: 13, textTransform: "none" },
-          tabBarStyle: { backgroundColor: colors.paper, elevation: 0, shadowOpacity: 0 },
+          tabBarStyle: { backgroundColor: colors.background, elevation: 0, shadowOpacity: 0 },
         }}
       >
         <Tab.Screen name="Overview" component={OverviewTab} />
@@ -68,42 +75,48 @@ export function VehicleDetailScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    backgroundColor: colors.paper,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.paper,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
-  },
-  name: {
-    fontFamily: fonts.display,
-    fontSize: 22,
-    color: colors.ink,
-  },
-  subtitle: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.inkMuted,
-    marginTop: 2,
-  },
-  editButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs + 2,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  editButtonText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 13,
-    color: colors.ink,
-  },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    center: {
+      flex: 1,
+      backgroundColor: colors.background,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.background,
+      paddingHorizontal: spacing.md,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.md,
+    },
+    name: {
+      fontFamily: fonts.display,
+      fontSize: 22,
+      color: colors.textPrimary,
+    },
+    subtitle: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textMuted,
+      marginTop: 2,
+    },
+    headerActions: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+    },
+    editButton: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs + 2,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    editButtonText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 13,
+      color: colors.textPrimary,
+    },
+  });

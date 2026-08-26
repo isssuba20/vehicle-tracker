@@ -2,7 +2,8 @@ import React, { useEffect, useMemo } from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { useVehicle } from "./VehicleContext";
 import { useAppStore } from "@/state/store";
-import { colors, fonts, radii, spacing } from "@/theme/theme";
+import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
+import { useThemeStore } from "@/theme/useThemeStore";
 import { dateUrgency, pmsUrgency } from "@/utils/urgency";
 import { formatDate, formatKm, formatKmPerLiter, formatPeso } from "@/utils/format";
 import { StatusRow } from "@/components/StatusRow";
@@ -11,6 +12,8 @@ import { latestKmPerLiter } from "@/utils/fuelEfficiency";
 export function OverviewTab() {
   const vehicle = useVehicle();
   const { fuelByVehicle, loadVehicleDetail } = useAppStore();
+  const colors = useThemeStore((s) => s.colors);
+  const styles = makeStyles(colors);
 
   useEffect(() => {
     loadVehicleDetail(vehicle.id);
@@ -52,7 +55,9 @@ export function OverviewTab() {
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statLabel}>Fuel efficiency</Text>
-            <Text style={styles.statValue}>{formatKmPerLiter(efficiency)}</Text>
+            <Text style={[styles.statValue, efficiency.implausible && styles.statValueWarning]}>
+              {formatKmPerLiter(efficiency.kmPerLiter, efficiency.implausible)}
+            </Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statLabel}>Purchased</Text>
@@ -67,15 +72,23 @@ export function OverviewTab() {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Details</Text>
-        <DetailLine label="Plate number" value={vehicle.plateNumber} />
-        <DetailLine label="VIN" value={vehicle.vin} />
-        <DetailLine label="Color" value={vehicle.color} />
+        <DetailLine styles={styles} label="Plate number" value={vehicle.plateNumber} />
+        <DetailLine styles={styles} label="VIN" value={vehicle.vin} />
+        <DetailLine styles={styles} label="Color" value={vehicle.color} />
       </View>
     </ScrollView>
   );
 }
 
-function DetailLine({ label, value }: { label: string; value: string }) {
+function DetailLine({
+  styles,
+  label,
+  value,
+}: {
+  styles: ReturnType<typeof makeStyles>;
+  label: string;
+  value: string;
+}) {
   return (
     <View style={styles.detailLine}>
       <Text style={styles.detailLabel}>{label}</Text>
@@ -84,60 +97,65 @@ function DetailLine({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.paper,
-    paddingHorizontal: spacing.md,
-  },
-  section: {
-    marginTop: spacing.lg,
-    backgroundColor: colors.paperRaised,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
-  },
-  sectionTitle: {
-    fontFamily: fonts.display,
-    fontSize: 16,
-    color: colors.ink,
-    marginBottom: spacing.sm,
-  },
-  statsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.md,
-  },
-  statCard: {
-    width: "45%",
-  },
-  statLabel: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.inkFaint,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  statValue: {
-    fontFamily: fonts.mono,
-    fontSize: 16,
-    color: colors.ink,
-    marginTop: 2,
-  },
-  detailLine: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: spacing.xs,
-  },
-  detailLabel: {
-    fontFamily: fonts.body,
-    fontSize: 14,
-    color: colors.inkMuted,
-  },
-  detailValue: {
-    fontFamily: fonts.mono,
-    fontSize: 14,
-    color: colors.ink,
-  },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      paddingHorizontal: spacing.md,
+    },
+    section: {
+      marginTop: spacing.lg,
+      backgroundColor: colors.surface,
+      borderRadius: radii.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      padding: spacing.md,
+    },
+    sectionTitle: {
+      fontFamily: fonts.display,
+      fontSize: 16,
+      color: colors.textPrimary,
+      marginBottom: spacing.sm,
+    },
+    statsGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing.md,
+    },
+    statCard: {
+      width: "45%",
+    },
+    statLabel: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.textFaint,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+    },
+    statValue: {
+      fontFamily: fonts.mono,
+      fontSize: 16,
+      color: colors.textPrimary,
+      marginTop: 2,
+    },
+    statValueWarning: {
+      color: colors.overdueBright,
+      fontSize: 13,
+    },
+    detailLine: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      paddingVertical: spacing.xs,
+    },
+    detailLabel: {
+      fontFamily: fonts.body,
+      fontSize: 14,
+      color: colors.textMuted,
+    },
+    detailValue: {
+      fontFamily: fonts.mono,
+      fontSize: 14,
+      color: colors.textPrimary,
+    },
+  });

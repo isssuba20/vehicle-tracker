@@ -1,20 +1,25 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Vehicle } from "@/types/models";
-import { colors, fonts, radii, spacing } from "@/theme/theme";
+import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
+import { useThemeStore } from "@/theme/useThemeStore";
 import { dateUrgency, pmsUrgency } from "@/utils/urgency";
 import { formatKm, formatKmPerLiter } from "@/utils/format";
+import { LatestEfficiency } from "@/utils/fuelEfficiency";
 import { UrgencyDot } from "./UrgencyDot";
 
 export function VehicleCard({
   vehicle,
-  latestKmPerLiter,
+  efficiency,
   onPress,
 }: {
   vehicle: Vehicle;
-  latestKmPerLiter: number | null;
+  efficiency: LatestEfficiency;
   onPress: () => void;
 }) {
+  const colors = useThemeStore((s) => s.colors);
+  const styles = makeStyles(colors);
+
   const registration = dateUrgency(vehicle.registrationExpiry);
   const insurance = dateUrgency(vehicle.insuranceExpiry);
   const pms = pmsUrgency(vehicle.nextPmsDueDate, vehicle.nextPmsDueKm, vehicle.currentOdometerKm);
@@ -42,60 +47,67 @@ export function VehicleCard({
         </View>
         <View>
           <Text style={styles.statLabel}>Fuel efficiency</Text>
-          <Text style={styles.statValue}>{formatKmPerLiter(latestKmPerLiter)}</Text>
+          <Text style={[styles.statValue, efficiency.implausible && styles.statValueWarning]}>
+            {formatKmPerLiter(efficiency.kmPerLiter, efficiency.implausible)}
+          </Text>
         </View>
       </View>
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.paperRaised,
-    borderRadius: radii.lg,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-  },
-  name: {
-    fontFamily: fonts.display,
-    fontSize: 20,
-    color: colors.ink,
-  },
-  subtitle: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.inkMuted,
-    marginTop: 2,
-  },
-  dots: {
-    flexDirection: "row",
-    paddingTop: 4,
-  },
-  statsRow: {
-    flexDirection: "row",
-    marginTop: spacing.md,
-    gap: spacing.xl,
-  },
-  statLabel: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.inkFaint,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  statValue: {
-    fontFamily: fonts.mono,
-    fontSize: 16,
-    color: colors.ink,
-    marginTop: 2,
-  },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: colors.surface,
+      borderRadius: radii.lg,
+      padding: spacing.md,
+      marginBottom: spacing.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    pressed: {
+      opacity: 0.85,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+    },
+    name: {
+      fontFamily: fonts.display,
+      fontSize: 20,
+      color: colors.textPrimary,
+    },
+    subtitle: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textMuted,
+      marginTop: 2,
+    },
+    dots: {
+      flexDirection: "row",
+      paddingTop: 4,
+    },
+    statsRow: {
+      flexDirection: "row",
+      marginTop: spacing.md,
+      gap: spacing.xl,
+    },
+    statLabel: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.textFaint,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+    },
+    statValue: {
+      fontFamily: fonts.mono,
+      fontSize: 16,
+      color: colors.textPrimary,
+      marginTop: 2,
+    },
+    statValueWarning: {
+      color: colors.overdueBright,
+      fontSize: 13,
+    },
+  });

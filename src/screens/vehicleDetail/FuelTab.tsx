@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useVehicle } from "./VehicleContext";
 import { useAppStore } from "@/state/store";
-import { colors, fonts, radii, spacing } from "@/theme/theme";
+import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
+import { useThemeStore } from "@/theme/useThemeStore";
 import { formatDate, formatKm, formatKmPerLiter, formatPeso } from "@/utils/format";
 import { withComputedEfficiency } from "@/utils/fuelEfficiency";
 import { QuickAddSheet } from "./QuickAddSheet";
@@ -11,6 +13,9 @@ export function FuelTab() {
   const vehicle = useVehicle();
   const { fuelByVehicle, loadVehicleDetail } = useAppStore();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const insets = useSafeAreaInsets();
+  const colors = useThemeStore((s) => s.colors);
+  const styles = makeStyles(colors);
 
   useEffect(() => {
     loadVehicleDetail(vehicle.id);
@@ -45,12 +50,17 @@ export function FuelTab() {
             </View>
             <View style={styles.rightCol}>
               <Text style={styles.cost}>{formatPeso(item.cost)}</Text>
-              <Text style={styles.efficiency}>{formatKmPerLiter(item.kmPerLiter)}</Text>
+              <Text style={[styles.efficiency, item.implausible && styles.efficiencyWarning]}>
+                {formatKmPerLiter(item.kmPerLiter, item.implausible)}
+              </Text>
             </View>
           </View>
         )}
       />
-      <Pressable style={styles.addButton} onPress={() => setSheetOpen(true)}>
+      <Pressable
+        style={[styles.addButton, { bottom: spacing.md + insets.bottom }]}
+        onPress={() => setSheetOpen(true)}
+      >
         <Text style={styles.addButtonText}>+ Log fuel</Text>
       </Pressable>
       <QuickAddSheet kind="fuel" visible={sheetOpen} onClose={() => setSheetOpen(false)} />
@@ -58,74 +68,77 @@ export function FuelTab() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.paper,
-  },
-  row: {
-    flexDirection: "row",
-    backgroundColor: colors.paperRaised,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-  },
-  date: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    color: colors.ink,
-  },
-  meta: {
-    fontFamily: fonts.mono,
-    fontSize: 12,
-    color: colors.inkMuted,
-    marginTop: 2,
-  },
-  rightCol: {
-    alignItems: "flex-end",
-  },
-  cost: {
-    fontFamily: fonts.mono,
-    fontSize: 14,
-    color: colors.ink,
-  },
-  efficiency: {
-    fontFamily: fonts.mono,
-    fontSize: 12,
-    color: colors.ok,
-    marginTop: 2,
-  },
-  empty: {
-    paddingVertical: spacing.xl,
-    alignItems: "center",
-  },
-  emptyTitle: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 16,
-    color: colors.ink,
-    marginBottom: spacing.xs,
-  },
-  emptyBody: {
-    fontFamily: fonts.body,
-    fontSize: 14,
-    color: colors.inkMuted,
-    textAlign: "center",
-  },
-  addButton: {
-    position: "absolute",
-    bottom: spacing.lg,
-    left: spacing.md,
-    right: spacing.md,
-    backgroundColor: colors.ink,
-    borderRadius: radii.lg,
-    paddingVertical: spacing.md,
-    alignItems: "center",
-  },
-  addButtonText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 16,
-    color: colors.paper,
-  },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    row: {
+      flexDirection: "row",
+      backgroundColor: colors.surface,
+      borderRadius: radii.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+      padding: spacing.md,
+      marginBottom: spacing.sm,
+    },
+    date: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 14,
+      color: colors.textPrimary,
+    },
+    meta: {
+      fontFamily: fonts.mono,
+      fontSize: 12,
+      color: colors.textMuted,
+      marginTop: 2,
+    },
+    rightCol: {
+      alignItems: "flex-end",
+    },
+    cost: {
+      fontFamily: fonts.mono,
+      fontSize: 14,
+      color: colors.textPrimary,
+    },
+    efficiency: {
+      fontFamily: fonts.mono,
+      fontSize: 12,
+      color: colors.okBright,
+      marginTop: 2,
+    },
+    efficiencyWarning: {
+      color: colors.overdueBright,
+    },
+    empty: {
+      paddingVertical: spacing.xl,
+      alignItems: "center",
+    },
+    emptyTitle: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 16,
+      color: colors.textPrimary,
+      marginBottom: spacing.xs,
+    },
+    emptyBody: {
+      fontFamily: fonts.body,
+      fontSize: 14,
+      color: colors.textMuted,
+      textAlign: "center",
+    },
+    addButton: {
+      position: "absolute",
+      left: spacing.md,
+      right: spacing.md,
+      backgroundColor: colors.accent,
+      borderRadius: radii.lg,
+      paddingVertical: spacing.md,
+      alignItems: "center",
+    },
+    addButtonText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 16,
+      color: colors.onAccent,
+    },
+  });

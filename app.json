@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Vehicle Tracker",
+    "name": "Garahe",
     "slug": "vehicle-tracker",
     "owner": "isssuba",
     "version": "1.0.0",
@@ -11,13 +11,18 @@
       "url": "https://u.expo.dev/18b5fd07-ab23-47e8-898a-ff673e4fda35"
     },
     "orientation": "portrait",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "scheme": "vehicletracker",
-    "backgroundColor": "#F3EFE7",
+    "backgroundColor": "#22262B",
+    "icon": "./assets/icon.png",
     "splash": {
-      "backgroundColor": "#F3EFE7"
+      "backgroundColor": "#22262B",
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.vehicletracker.app"
@@ -25,7 +30,12 @@
     "android": {
       "package": "com.vehicletracker.app",
       "adaptiveIcon": {
-        "backgroundColor": "#F3EFE7"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#22262B"
+      },
+      "navigationBar": {
+        "backgroundColor": "#22262B",
+        "barStyle": "light-content"
       }
     },
     "extra": {

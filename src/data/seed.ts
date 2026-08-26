@@ -129,7 +129,7 @@ export async function seedIfEmpty(repo: Repository): Promise<void> {
       type: "Oil change",
       cost: 650,
       shop: "Honda Wing Center",
-      odometerKm: 7800,
+      odometerKm: 8000,
     },
     {
       id: uuid.v4() as string,
@@ -150,7 +150,7 @@ export async function seedIfEmpty(repo: Repository): Promise<void> {
     { id: uuid.v4() as string, vehicleId: fortuner.id, date: isoDaysAgo(30), liters: 45, cost: 3150, odometerKm: 41400 },
     { id: uuid.v4() as string, vehicleId: fortuner.id, date: isoDaysAgo(16), liters: 42, cost: 2940, odometerKm: 41850 },
     { id: uuid.v4() as string, vehicleId: fortuner.id, date: isoDaysAgo(3), liters: 44, cost: 3080, odometerKm: 42350 },
-    { id: uuid.v4() as string, vehicleId: click.id, date: isoDaysAgo(20), liters: 4.5, cost: 315, odometerKm: 7600 },
+    { id: uuid.v4() as string, vehicleId: click.id, date: isoDaysAgo(20), liters: 4.5, cost: 315, odometerKm: 7940 },
     { id: uuid.v4() as string, vehicleId: click.id, date: isoDaysAgo(6), liters: 4.2, cost: 294, odometerKm: 8120 },
     { id: uuid.v4() as string, vehicleId: mazda3.id, date: isoDaysAgo(40), liters: 38, cost: 2660, odometerKm: 60500 },
     { id: uuid.v4() as string, vehicleId: mazda3.id, date: isoDaysAgo(10), liters: 36, cost: 2520, odometerKm: 61200 },

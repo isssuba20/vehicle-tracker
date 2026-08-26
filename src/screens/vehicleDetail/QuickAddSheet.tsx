@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Modal, View, Text, Pressable, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
 import uuid from "react-native-uuid";
-import { colors, fonts, radii, spacing } from "@/theme/theme";
+import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
+import { useThemeStore } from "@/theme/useThemeStore";
 import { TextField } from "@/components/TextField";
 import { DateField } from "@/components/DateField";
 import { useAppStore } from "@/state/store";
@@ -20,6 +21,8 @@ export function QuickAddSheet({
 }) {
   const vehicle = useVehicle();
   const { addFuelEntry, addServiceEntry } = useAppStore();
+  const colors = useThemeStore((s) => s.colors);
+  const styles = makeStyles(colors);
 
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [odometerKm, setOdometerKm] = useState(String(vehicle.currentOdometerKm));
@@ -172,7 +175,7 @@ export function QuickAddSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) => StyleSheet.create({
   backdrop: {
     flex: 1,
     justifyContent: "flex-end",
@@ -182,7 +185,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sheet: {
-    backgroundColor: colors.paper,
+    backgroundColor: colors.background,
     borderTopLeftRadius: radii.lg,
     borderTopRightRadius: radii.lg,
     padding: spacing.lg,
@@ -199,13 +202,13 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: fonts.display,
     fontSize: 20,
-    color: colors.ink,
+    color: colors.textPrimary,
     marginBottom: spacing.md,
   },
   error: {
     fontFamily: fonts.body,
     fontSize: 13,
-    color: colors.overdue,
+    color: colors.overdueBright,
     marginBottom: spacing.sm,
   },
   actions: {
@@ -220,19 +223,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cancelButton: {
-    backgroundColor: colors.paperRaised,
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
   },
   cancelText: {
     fontFamily: fonts.bodySemiBold,
-    color: colors.ink,
+    color: colors.textPrimary,
   },
   saveButton: {
-    backgroundColor: colors.ink,
+    backgroundColor: colors.accent,
   },
   saveText: {
     fontFamily: fonts.bodySemiBold,
-    color: colors.paper,
+    color: colors.onAccent,
   },
 });
