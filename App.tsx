@@ -19,6 +19,8 @@ import {
   Inter_500Medium,
   Inter_600SemiBold,
 } from "@expo-google-fonts/inter";
+import { useFonts as useIconFont } from "expo-font";
+import { Ionicons } from "@expo/vector-icons";
 import { View, ActivityIndicator } from "react-native";
 import { RootNavigator } from "@/navigation/RootNavigator";
 import { colors } from "@/theme/theme";
@@ -39,8 +41,9 @@ export default function App() {
   const [oswaldLoaded] = useOswald({ Oswald_500Medium, Oswald_600SemiBold });
   const [monoLoaded] = useJetBrainsMono({ JetBrainsMono_400Regular, JetBrainsMono_500Medium });
   const [interLoaded] = useInter({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold });
+  const [iconsLoaded] = useIconFont(Ionicons.font);
 
-  const fontsReady = oswaldLoaded && monoLoaded && interLoaded;
+  const fontsReady = oswaldLoaded && monoLoaded && interLoaded && iconsLoaded;
 
   if (!fontsReady) {
     return (

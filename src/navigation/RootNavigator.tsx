@@ -1,6 +1,7 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
 import { RootStackParamList, TabParamList } from "./types";
 import { DashboardScreen } from "@/screens/DashboardScreen";
 import { SettingsScreen } from "@/screens/SettingsScreen";
@@ -22,8 +23,24 @@ function TabsNavigator() {
         tabBarLabelStyle: { fontFamily: fonts.bodyMedium, fontSize: 12 },
       }}
     >
-      <Tabs.Screen name="Dashboard" component={DashboardScreen} />
-      <Tabs.Screen name="Settings" component={SettingsScreen} />
+      <Tabs.Screen
+        name="Dashboard"
+        component={DashboardScreen}
+        options={{
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? "speedometer" : "speedometer-outline"} size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? "settings" : "settings-outline"} size={size} color={color} />
+          ),
+        }}
+      />
     </Tabs.Navigator>
   );
 }
