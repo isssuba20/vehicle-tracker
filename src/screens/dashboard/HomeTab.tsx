@@ -1,9 +1,19 @@
 import React from "react";
-import { ScrollView, Text, View, RefreshControl, StyleSheet } from "react-native";
+import { ScrollView, Text, View, Pressable, RefreshControl, StyleSheet } from "react-native";
+import { CompositeNavigationProp } from "@react-navigation/native";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { TabParamList, RootStackParamList } from "@/navigation/types";
 import { ActionCenter } from "@/components/ActionCenter";
-import { fonts, spacing, ThemeColors } from "@/theme/theme";
+import { AnimatedPressable } from "@/components/AnimatedPressable";
+import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { ActionItem } from "@/services/fleetAnalytics";
+
+type DashboardNav = CompositeNavigationProp<
+  BottomTabNavigationProp<TabParamList, "Dashboard">,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 
 function greeting(): string {
   const hour = new Date().getHours();
@@ -19,12 +29,16 @@ function greeting(): string {
  * attention-worthy items so it never grows past what's actually urgent.
  */
 export function HomeTab({
+  navigation,
+  hasVehicles,
   actionItems,
   currentMemberName,
   onMarkDone,
   refreshing,
   onRefresh,
 }: {
+  navigation: DashboardNav;
+  hasVehicles: boolean;
   actionItems: ActionItem[];
   currentMemberName: string | undefined;
   onMarkDone: (item: ActionItem) => void;
@@ -46,14 +60,29 @@ export function HomeTab({
         {currentMemberName ? `, ${currentMemberName}` : ""}
       </Text>
       <Text style={styles.greetingSub}>
-        {actionItems.length === 0
+        {!hasVehicles
+          ? "Add your first vehicle to get started"
+          : actionItems.length === 0
           ? "Your household is all caught up"
           : `${actionItems.length} thing${actionItems.length === 1 ? "" : "s"} need${
               actionItems.length === 1 ? "s" : ""
             } your attention`}
       </Text>
 
-      {actionItems.length > 0 ? (
+      {!hasVehicles ? (
+        <View style={styles.onboarding}>
+          <Text style={styles.onboardingText}>
+            Once you add a vehicle, registration, insurance, and service renewals that are overdue or coming
+            up will show here first.
+          </Text>
+          <AnimatedPressable
+            style={styles.onboardingButton}
+            onPress={() => navigation.navigate("AddEditVehicle", {})}
+          >
+            <Text style={styles.onboardingButtonText}>+ Add your first vehicle</Text>
+          </AnimatedPressable>
+        </View>
+      ) : actionItems.length > 0 ? (
         <View style={styles.section}>
           <ActionCenter items={actionItems} onMarkDone={onMarkDone} />
         </View>
@@ -99,5 +128,29 @@ const makeStyles = (colors: ThemeColors) =>
       fontSize: 14,
       color: colors.textMuted,
       textAlign: "center",
+    },
+    onboarding: {
+      marginTop: spacing.xl,
+      alignItems: "center",
+      paddingHorizontal: spacing.lg,
+    },
+    onboardingText: {
+      fontFamily: fonts.body,
+      fontSize: 14,
+      color: colors.textMuted,
+      textAlign: "center",
+      marginBottom: spacing.lg,
+    },
+    onboardingButton: {
+      backgroundColor: colors.accent,
+      borderRadius: radii.lg,
+      paddingVertical: spacing.sm + 2,
+      paddingHorizontal: spacing.lg,
+      alignItems: "center",
+    },
+    onboardingButtonText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 15,
+      color: colors.onAccent,
     },
   });

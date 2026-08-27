@@ -5,6 +5,7 @@ import { Vehicle, Urgency } from "@/types/models";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { dateUrgency, pmsUrgency, worseOf } from "@/utils/urgency";
+import { useReminderSettingsStore } from "@/state/useReminderSettingsStore";
 import { formatKm, formatDate } from "@/utils/format";
 import { EfficiencyDisplay } from "@/utils/vehicleEfficiencyDisplay";
 import { usePhotoPicker } from "@/utils/usePhotoPicker";
@@ -31,10 +32,12 @@ export function VehicleCard({
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
   const { openPicker, sheetProps } = usePhotoPicker(vehicle.photoUri, onPhotoChange);
+  const dueSoonDays = useReminderSettingsStore((s) => s.dueSoonDays);
+  const dueSoonKm = useReminderSettingsStore((s) => s.dueSoonKm);
 
-  const registration = dateUrgency(vehicle.registrationExpiry);
-  const insurance = dateUrgency(vehicle.insuranceExpiry);
-  const pms = pmsUrgency(vehicle.nextPmsDueDate, vehicle.nextPmsDueKm, vehicle.currentOdometerKm);
+  const registration = dateUrgency(vehicle.registrationExpiry, dueSoonDays);
+  const insurance = dateUrgency(vehicle.insuranceExpiry, dueSoonDays);
+  const pms = pmsUrgency(vehicle.nextPmsDueDate, vehicle.nextPmsDueKm, vehicle.currentOdometerKm, dueSoonDays, dueSoonKm);
   const overall = worseOf(worseOf(registration, insurance), pms);
 
   const nextDue =

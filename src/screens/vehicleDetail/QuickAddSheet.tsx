@@ -30,12 +30,20 @@ export function QuickAddSheet({
   visible,
   onClose,
   entry,
+  duplicateFrom,
 }: {
   kind: Kind;
   visible: boolean;
   onClose: () => void;
   /** When set, the sheet edits (and can delete) this entry instead of creating a new one. */
   entry?: Entry;
+  /**
+   * When set (and `entry` isn't), pre-fills a brand-new entry's cost/
+   * type/shop/liters/kWh from this one — date and odometer always start
+   * fresh (today, current odometer), never copied. For recurring costs
+   * (same fill-up amount, same shop) so the form isn't blank every time.
+   */
+  duplicateFrom?: Entry;
 }) {
   const vehicle = useVehicle();
   const {
@@ -86,6 +94,17 @@ export function QuickAddSheet({
         setShop((entry as ServiceLogEntry).shop);
         setNotes((entry as ServiceLogEntry).notes ?? "");
       }
+    } else if (duplicateFrom) {
+      setDate(new Date().toISOString().slice(0, 10));
+      setOdometerKm(String(vehicle.currentOdometerKm));
+      setCost(String(duplicateFrom.cost));
+      if (kind === "fuel") setLiters(String((duplicateFrom as FuelLogEntry).liters));
+      if (kind === "charging") setKwh(String((duplicateFrom as ChargingLogEntry).kwh));
+      if (kind === "service") {
+        setType((duplicateFrom as ServiceLogEntry).type);
+        setShop((duplicateFrom as ServiceLogEntry).shop);
+        setNotes("");
+      }
     } else {
       setDate(new Date().toISOString().slice(0, 10));
       setOdometerKm(String(vehicle.currentOdometerKm));
@@ -96,7 +115,7 @@ export function QuickAddSheet({
       setShop("");
       setNotes("");
     }
-  }, [visible, entry, kind]);
+  }, [visible, entry, duplicateFrom, kind]);
 
   function close() {
     onClose();

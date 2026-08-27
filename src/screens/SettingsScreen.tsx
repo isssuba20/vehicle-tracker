@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, Pressable, StyleSheet, Alert } from "react-native";
+import { View, Text, ScrollView, Pressable, StyleSheet, Alert, Share } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Updates from "expo-updates";
 import { useAppStore } from "@/state/store";
@@ -8,8 +8,16 @@ import { isSupabaseConfigured } from "@/data/supabase/client";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { useCurrencyStore } from "@/state/useCurrencyStore";
+import {
+  useReminderSettingsStore,
+  MIN_DUE_SOON_DAYS,
+  MAX_DUE_SOON_DAYS,
+  MIN_DUE_SOON_KM,
+  MAX_DUE_SOON_KM,
+} from "@/state/useReminderSettingsStore";
 import { TextField } from "@/components/TextField";
 import { CurrencyPickerField } from "@/components/CurrencyPickerField";
+import { buildHouseholdExportCsv } from "@/services/householdExport";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { TabScreenProps } from "@/navigation/types";
 
@@ -27,11 +35,27 @@ function buildInfoLabel(): string {
 }
 
 export function SettingsScreen({ navigation }: TabScreenProps<"Settings">) {
-  const { groupIds, groups, members, loadMembers, inviteMember, updateHouseholdBudget, currentUserId } =
-    useAppStore();
+  const {
+    groupIds,
+    groups,
+    members,
+    loadMembers,
+    inviteMember,
+    updateHouseholdBudget,
+    currentUserId,
+    vehicles,
+    fuelByVehicle,
+    serviceByVehicle,
+    chargingByVehicle,
+    loadVehicleDetail,
+  } = useAppStore();
   const signOut = useAuthStore((s) => s.signOut);
   const currencyCode = useCurrencyStore((s) => s.code);
   const setCurrencyCode = useCurrencyStore((s) => s.setCode);
+  const dueSoonDays = useReminderSettingsStore((s) => s.dueSoonDays);
+  const dueSoonKm = useReminderSettingsStore((s) => s.dueSoonKm);
+  const setDueSoonDays = useReminderSettingsStore((s) => s.setDueSoonDays);
+  const setDueSoonKm = useReminderSettingsStore((s) => s.setDueSoonKm);
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
   const insets = useSafeAreaInsets();
@@ -42,6 +66,10 @@ export function SettingsScreen({ navigation }: TabScreenProps<"Settings">) {
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [budgetInput, setBudgetInput] = useState(household?.monthlyBudget != null ? String(household.monthlyBudget) : "");
   const [savingBudget, setSavingBudget] = useState(false);
+  const [daysInput, setDaysInput] = useState(String(dueSoonDays));
+  const [kmInput, setKmInput] = useState(String(dueSoonKm));
+  const [savingReminders, setSavingReminders] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   async function handleSaveBudget() {
     if (!groupId || savingBudget) return;
@@ -55,6 +83,45 @@ export function SettingsScreen({ navigation }: TabScreenProps<"Settings">) {
       await updateHouseholdBudget(groupId, value);
     } finally {
       setSavingBudget(false);
+    }
+  }
+
+  async function handleSaveReminders() {
+    if (savingReminders) return;
+    const days = Number(daysInput);
+    const km = Number(kmInput);
+    if (Number.isNaN(days) || days < MIN_DUE_SOON_DAYS || days > MAX_DUE_SOON_DAYS) {
+      Alert.alert("Enter a valid number of days", `Use a value between ${MIN_DUE_SOON_DAYS} and ${MAX_DUE_SOON_DAYS}.`);
+      return;
+    }
+    if (Number.isNaN(km) || km < MIN_DUE_SOON_KM || km > MAX_DUE_SOON_KM) {
+      Alert.alert("Enter a valid distance", `Use a value between ${MIN_DUE_SOON_KM} and ${MAX_DUE_SOON_KM} km.`);
+      return;
+    }
+    setSavingReminders(true);
+    try {
+      await setDueSoonDays(days);
+      await setDueSoonKm(km);
+    } finally {
+      setSavingReminders(false);
+    }
+  }
+
+  async function handleExportAll() {
+    if (exporting) return;
+    if (vehicles.length === 0) {
+      Alert.alert("Nothing to export", "Add a vehicle first.");
+      return;
+    }
+    setExporting(true);
+    try {
+      await Promise.all(vehicles.map((v) => loadVehicleDetail(v.id)));
+      const csv = buildHouseholdExportCsv(vehicles, serviceByVehicle, fuelByVehicle, chargingByVehicle, currencyCode);
+      await Share.share({ message: csv, title: "Garahe household data export" });
+    } catch (err) {
+      Alert.alert("Export failed", err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setExporting(false);
     }
   }
 
@@ -92,6 +159,14 @@ export function SettingsScreen({ navigation }: TabScreenProps<"Settings">) {
   useEffect(() => {
     setBudgetInput(household?.monthlyBudget != null ? String(household.monthlyBudget) : "");
   }, [household?.monthlyBudget]);
+
+  useEffect(() => {
+    setDaysInput(String(dueSoonDays));
+  }, [dueSoonDays]);
+
+  useEffect(() => {
+    setKmInput(String(dueSoonKm));
+  }, [dueSoonKm]);
 
   async function handleInvite() {
     if (!groupId) return;
@@ -139,6 +214,38 @@ export function SettingsScreen({ navigation }: TabScreenProps<"Settings">) {
       </View>
 
       <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Renewal reminders</Text>
+        <Text style={styles.sectionBody}>
+          How far ahead registration, insurance, and PMS should switch from "OK" to "Due soon."
+        </Text>
+        <View style={styles.reminderRow}>
+          <View style={styles.reminderField}>
+            <TextField
+              label="Days before expiry"
+              keyboardType="number-pad"
+              value={daysInput}
+              onChangeText={setDaysInput}
+            />
+          </View>
+          <View style={styles.reminderField}>
+            <TextField
+              label="Km before PMS due"
+              keyboardType="number-pad"
+              value={kmInput}
+              onChangeText={setKmInput}
+            />
+          </View>
+        </View>
+        <Pressable style={styles.inviteButton} onPress={handleSaveReminders} disabled={savingReminders}>
+          <Text style={styles.inviteButtonText}>{savingReminders ? "Saving…" : "Save reminder settings"}</Text>
+        </Pressable>
+        <Text style={styles.reminderNote}>
+          This only changes what this device shows — the daily notification still uses the app's default
+          30-day / 500 km window.
+        </Text>
+      </View>
+
+      <View style={styles.section}>
         <Text style={styles.sectionTitle}>Household budget</Text>
         <Text style={styles.sectionBody}>
           A monthly target for total vehicle spending, shown against actual spend on the dashboard.
@@ -159,6 +266,17 @@ export function SettingsScreen({ navigation }: TabScreenProps<"Settings">) {
         <Text style={styles.linkRowText}>Service centers</Text>
         <Text style={styles.linkRowChevron}>›</Text>
       </Pressable>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Export all data</Text>
+        <Text style={styles.sectionBody}>
+          Every vehicle's details plus its full fuel, service, and charging history, as CSV — for backing up
+          or opening in a spreadsheet.
+        </Text>
+        <Pressable style={styles.inviteButton} onPress={handleExportAll} disabled={exporting}>
+          <Text style={styles.inviteButtonText}>{exporting ? "Preparing…" : "Export all data"}</Text>
+        </Pressable>
+      </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Invite a member</Text>
@@ -268,6 +386,19 @@ const makeStyles = (colors: ThemeColors) =>
       fontSize: 11,
       color: colors.textMuted,
       textTransform: "capitalize",
+    },
+    reminderRow: {
+      flexDirection: "row",
+      gap: spacing.sm,
+    },
+    reminderField: {
+      flex: 1,
+    },
+    reminderNote: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.textFaint,
+      marginTop: spacing.sm,
     },
     linkRow: {
       flexDirection: "row",

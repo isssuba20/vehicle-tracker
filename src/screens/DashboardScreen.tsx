@@ -5,6 +5,7 @@ import { createMaterialTopTabNavigator } from "@react-navigation/material-top-ta
 import { TabScreenProps } from "@/navigation/types";
 import { useAppStore } from "@/state/store";
 import { useCurrencyStore } from "@/state/useCurrencyStore";
+import { useReminderSettingsStore } from "@/state/useReminderSettingsStore";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { HomeTab } from "./dashboard/HomeTab";
 import { FleetTab } from "./dashboard/FleetTab";
@@ -47,6 +48,8 @@ export function DashboardScreen({ navigation }: Props) {
   } = useAppStore();
   const colors = useThemeStore((s) => s.colors);
   const currencyCode = useCurrencyStore((s) => s.code);
+  const dueSoonDays = useReminderSettingsStore((s) => s.dueSoonDays);
+  const dueSoonKm = useReminderSettingsStore((s) => s.dueSoonKm);
   const styles = makeStyles(colors);
   const insets = useSafeAreaInsets();
   const [markDone, setMarkDone] = useState<{ kind: RenewalKind; vehicleId: string } | null>(null);
@@ -91,7 +94,10 @@ export function DashboardScreen({ navigation }: Props) {
     return map;
   }, [vehicles, fuelByVehicle, chargingByVehicle]);
 
-  const actionItems = useMemo(() => getActionItems(vehicles), [vehicles]);
+  const actionItems = useMemo(
+    () => getActionItems(vehicles, dueSoonDays, dueSoonKm),
+    [vehicles, dueSoonDays, dueSoonKm]
+  );
 
   const expenses = useMemo(
     () => getAllExpenses(vehicles, fuelByVehicle, serviceByVehicle, chargingByVehicle),
@@ -141,6 +147,8 @@ export function DashboardScreen({ navigation }: Props) {
         <Tab.Screen name="Home">
           {() => (
             <HomeTab
+              navigation={navigation}
+              hasVehicles={vehicles.length > 0}
               actionItems={actionItems}
               currentMemberName={currentMemberName}
               onMarkDone={openMarkDone}

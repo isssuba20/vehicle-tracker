@@ -18,6 +18,7 @@ export function ChargingTab() {
   const { chargingByVehicle, loadVehicleDetail, deleteChargingEntry } = useAppStore();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<ChargingLogEntry | undefined>(undefined);
+  const [duplicateEntry, setDuplicateEntry] = useState<ChargingLogEntry | undefined>(undefined);
   const insets = useSafeAreaInsets();
   const colors = useThemeStore((s) => s.colors);
   const currencyCode = useCurrencyStore((s) => s.code);
@@ -34,11 +35,19 @@ export function ChargingTab() {
 
   function openAdd() {
     setEditingEntry(undefined);
+    setDuplicateEntry(undefined);
     setSheetOpen(true);
   }
 
   function openEdit(entry: ChargingLogEntry) {
     setEditingEntry(entry);
+    setDuplicateEntry(undefined);
+    setSheetOpen(true);
+  }
+
+  function openDuplicate(entry: ChargingLogEntry) {
+    setEditingEntry(undefined);
+    setDuplicateEntry(entry);
     setSheetOpen(true);
   }
 
@@ -79,6 +88,15 @@ export function ChargingTab() {
             </View>
             <Pressable
               style={styles.deleteIcon}
+              onPress={() => openDuplicate(item)}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={`Duplicate charging entry from ${formatDate(item.date)}`}
+            >
+              <Ionicons name="copy-outline" size={16} color={colors.textFaint} />
+            </Pressable>
+            <Pressable
+              style={styles.deleteIcon}
               onPress={() => handleDelete(item)}
               hitSlop={8}
               accessibilityRole="button"
@@ -98,6 +116,7 @@ export function ChargingTab() {
         kind="charging"
         visible={sheetOpen}
         entry={editingEntry}
+        duplicateFrom={duplicateEntry}
         onClose={() => setSheetOpen(false)}
       />
     </View>

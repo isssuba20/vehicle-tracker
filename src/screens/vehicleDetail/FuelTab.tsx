@@ -18,6 +18,7 @@ export function FuelTab() {
   const { fuelByVehicle, loadVehicleDetail, deleteFuelEntry } = useAppStore();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<FuelLogEntry | undefined>(undefined);
+  const [duplicateEntry, setDuplicateEntry] = useState<FuelLogEntry | undefined>(undefined);
   const insets = useSafeAreaInsets();
   const colors = useThemeStore((s) => s.colors);
   const currencyCode = useCurrencyStore((s) => s.code);
@@ -34,11 +35,19 @@ export function FuelTab() {
 
   function openAdd() {
     setEditingEntry(undefined);
+    setDuplicateEntry(undefined);
     setSheetOpen(true);
   }
 
   function openEdit(entry: FuelLogEntry) {
     setEditingEntry(entry);
+    setDuplicateEntry(undefined);
+    setSheetOpen(true);
+  }
+
+  function openDuplicate(entry: FuelLogEntry) {
+    setEditingEntry(undefined);
+    setDuplicateEntry(entry);
     setSheetOpen(true);
   }
 
@@ -79,6 +88,15 @@ export function FuelTab() {
             </View>
             <Pressable
               style={styles.deleteIcon}
+              onPress={() => openDuplicate(item)}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={`Duplicate fuel entry from ${formatDate(item.date)}`}
+            >
+              <Ionicons name="copy-outline" size={16} color={colors.textFaint} />
+            </Pressable>
+            <Pressable
+              style={styles.deleteIcon}
               onPress={() => handleDelete(item)}
               hitSlop={8}
               accessibilityRole="button"
@@ -98,6 +116,7 @@ export function FuelTab() {
         kind="fuel"
         visible={sheetOpen}
         entry={editingEntry}
+        duplicateFrom={duplicateEntry}
         onClose={() => setSheetOpen(false)}
       />
     </View>

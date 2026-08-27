@@ -9,6 +9,7 @@ import { formatDate, formatKm, formatMoney } from "@/utils/format";
 import { StatusRow } from "@/components/StatusRow";
 import { getEfficiencyDisplay } from "@/utils/vehicleEfficiencyDisplay";
 import { useCurrencyStore } from "@/state/useCurrencyStore";
+import { useReminderSettingsStore } from "@/state/useReminderSettingsStore";
 import { MarkDoneSheet, RenewalKind } from "./MarkDoneSheet";
 
 export function OverviewTab() {
@@ -16,6 +17,8 @@ export function OverviewTab() {
   const { fuelByVehicle, chargingByVehicle, loadVehicleDetail } = useAppStore();
   const colors = useThemeStore((s) => s.colors);
   const currencyCode = useCurrencyStore((s) => s.code);
+  const dueSoonDays = useReminderSettingsStore((s) => s.dueSoonDays);
+  const dueSoonKm = useReminderSettingsStore((s) => s.dueSoonKm);
   const styles = makeStyles(colors);
   const [markDoneKind, setMarkDoneKind] = useState<RenewalKind | null>(null);
 
@@ -23,9 +26,9 @@ export function OverviewTab() {
     loadVehicleDetail(vehicle.id);
   }, [vehicle.id]);
 
-  const registration = dateUrgency(vehicle.registrationExpiry);
-  const insurance = dateUrgency(vehicle.insuranceExpiry);
-  const pms = pmsUrgency(vehicle.nextPmsDueDate, vehicle.nextPmsDueKm, vehicle.currentOdometerKm);
+  const registration = dateUrgency(vehicle.registrationExpiry, dueSoonDays);
+  const insurance = dateUrgency(vehicle.insuranceExpiry, dueSoonDays);
+  const pms = pmsUrgency(vehicle.nextPmsDueDate, vehicle.nextPmsDueKm, vehicle.currentOdometerKm, dueSoonDays, dueSoonKm);
 
   const isHybridOrElectric = vehicle.fuelType !== "gas";
 

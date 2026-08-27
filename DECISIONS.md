@@ -584,6 +584,75 @@ vehicle cards, empty state, "+ Add a vehicle" footer. Dashboard is now
 No schema changes — pure UI reorganization + one component (ActionCenter)
 gaining grouping/collapse state.
 
+## Six-item polish batch: search, reminder lead time, export, onboarding, contrast, duplicate
+
+**Fleet search/filter.** `FleetTab` gets a search bar (name/make/model/
+plate, case-insensitive substring) — but only once there are >= 4
+vehicles (`SEARCH_MIN_VEHICLES`); below that it's pure clutter with
+nothing to narrow down. No new dependency, filters client-side over
+the already-loaded vehicle list.
+
+**Configurable renewal lead time.** The "due soon" window (registration/
+insurance by date, PMS by km) was hardcoded at 30 days / 500 km in
+`urgency.ts`. `dateUrgency()`/`pmsUrgency()` now take optional
+threshold params (default unchanged) and a new
+`useReminderSettingsStore` (AsyncStorage-persisted, same pattern as
+currency/theme) holds the user's chosen values, editable in Settings.
+**Important limitation, called out in the Settings UI itself**: this is
+a device-local setting, not synced anywhere — the daily push
+notification (`supabase/functions/daily-reminders`) has its own
+hardcoded 30/500 baked into the Edge Function and has no way to read a
+device's AsyncStorage. Syncing the two would need a stored per-household
+setting (a schema change), so for now the in-app display and the daily
+push can disagree if someone changes this. Flagged in-app, not hidden.
+
+**Export all data.** New `src/services/householdExport.ts` builds a
+CSV (not prose, unlike the single-vehicle share report) covering every
+vehicle's own fields plus its full fuel/service/charging history in one
+text file — two tables (VEHICLES, ENTRIES) since a vehicle and a log
+entry don't share a row shape, and no zip/xlsx library exists in this
+project to split them into real sheets. Shared via the same
+`Share.share()` pattern as the existing per-vehicle report — no new
+dependency.
+
+**Onboarding: Home tab's zero-vehicle state.** Previously a household
+with no vehicles yet still saw "Your household is all caught up" —
+technically true (zero action items) but a strange first impression.
+`HomeTab` now takes `hasVehicles` and shows a distinct prompt ("Add
+your first vehicle to get started") with a button straight into
+Add/Edit Vehicle, instead of implying there's nothing to do yet.
+
+**Light-mode chart contrast, computed not eyeballed.** Ran the actual
+WCAG relative-luminance contrast formula against every newly-added
+color: `chartFuel` in light mode (previously == `accent`, `#B8862E`)
+measured **2.89:1** against background/surface — under the 3:1
+non-text-contrast floor, now that it's used for a chart bar/legend
+swatch/activity-feed dot (a fill, not the small icon/text use the raw
+accent was originally tuned and accepted for at that same borderline
+ratio). Fixed by pointing `lightColors.chartFuel` at the already-
+existing `accentMuted` token (`#8C6423`, 4.74:1/5.30:1) instead of
+inventing a new color — same gold family, already vetted as part of
+the palette. `chartService`/`chartCharging` and the `UpdateBanner`
+text-on-accent combo were already comfortably above 4.5:1 in both
+modes; no changes needed there. The three chart colors are only ever
+shown next to a text label (chart legend, activity feed row text) per
+the working data-viz rule "color is never the sole identifier," so
+distinguishing them by hue alone wasn't a hard requirement here.
+
+**Faster data entry: duplicate an entry.** Every Service/Fuel/Charging
+log row gets a "copy" icon next to delete. It opens the same
+`QuickAddSheet` used for add/edit, but pre-filled from that entry's
+cost/type/shop/liters/kWh — date always resets to today and odometer
+always resets to the vehicle's current reading (never copied, since
+those are exactly the two fields that must change for a new entry).
+For recurring costs (same shop, same fill-up amount) this turns a
+blank form into a few taps. `QuickAddSheet` gained a `duplicateFrom`
+prop, kept distinct from `entry` (which means "edit this exact
+record," including its delete button) — duplicating always creates a
+new record.
+
+No schema changes across any of these six.
+
 ## Card usage in Vehicle Detail → Overview tab
 
 The brief says not to wrap every section in a card. Kept "At a glance" (the

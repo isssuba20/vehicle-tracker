@@ -164,12 +164,16 @@ export interface ActionItem {
 }
 
 /** Aggregates the same registration/insurance/PMS urgency check every vehicle already computes, across the whole household. */
-export function getActionItems(vehicles: Vehicle[]): ActionItem[] {
+export function getActionItems(
+  vehicles: Vehicle[],
+  dueSoonDays?: number,
+  dueSoonKm?: number
+): ActionItem[] {
   const items: ActionItem[] = [];
   for (const v of vehicles) {
-    const registration = dateUrgency(v.registrationExpiry);
-    const insurance = dateUrgency(v.insuranceExpiry);
-    const pms = pmsUrgency(v.nextPmsDueDate, v.nextPmsDueKm, v.currentOdometerKm);
+    const registration = dateUrgency(v.registrationExpiry, dueSoonDays);
+    const insurance = dateUrgency(v.insuranceExpiry, dueSoonDays);
+    const pms = pmsUrgency(v.nextPmsDueDate, v.nextPmsDueKm, v.currentOdometerKm, dueSoonDays, dueSoonKm);
 
     if (registration !== "ok") {
       items.push({ vehicleId: v.id, vehicleName: v.name, kind: "registration", urgency: registration, label: "Registration", dateLabel: v.registrationExpiry });
@@ -187,9 +191,9 @@ export function getActionItems(vehicles: Vehicle[]): ActionItem[] {
 }
 
 /** Worst urgency across every vehicle's registration/insurance/PMS — drives the dashboard's overall household status. */
-export function getHouseholdUrgency(vehicles: Vehicle[]): Urgency {
+export function getHouseholdUrgency(vehicles: Vehicle[], dueSoonDays?: number, dueSoonKm?: number): Urgency {
   let worst: Urgency = "ok";
-  for (const item of getActionItems(vehicles)) {
+  for (const item of getActionItems(vehicles, dueSoonDays, dueSoonKm)) {
     worst = worseOf(worst, item.urgency);
   }
   return worst;

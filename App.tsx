@@ -22,6 +22,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AppGate } from "@/navigation/AppGate";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { useCurrencyStore } from "@/state/useCurrencyStore";
+import { useReminderSettingsStore } from "@/state/useReminderSettingsStore";
 import { useAppUpdateCheck } from "@/hooks/useAppUpdateCheck";
 import { UpdateBanner } from "@/components/UpdateBanner";
 
@@ -42,14 +43,18 @@ export default function App() {
   const { mode, colors, hydrated, init } = useThemeStore();
   const currencyHydrated = useCurrencyStore((s) => s.hydrated);
   const initCurrency = useCurrencyStore((s) => s.init);
+  const reminderSettingsHydrated = useReminderSettingsStore((s) => s.hydrated);
+  const initReminderSettings = useReminderSettingsStore((s) => s.init);
   const updateState = useAppUpdateCheck();
 
   useEffect(() => {
     init();
     initCurrency();
+    initReminderSettings();
   }, []);
 
-  const fontsReady = monoLoaded && manropeLoaded && iconsLoaded && hydrated && currencyHydrated;
+  const fontsReady =
+    monoLoaded && manropeLoaded && iconsLoaded && hydrated && currencyHydrated && reminderSettingsHydrated;
 
   if (!fontsReady) {
     return (

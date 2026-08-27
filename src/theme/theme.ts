@@ -97,7 +97,13 @@ export const lightColors: ThemeColors = {
   okBright: "#2E6B63",
   overdueBright: "#C1483A",
 
-  chartFuel: "#B8862E",
+  // chartFuel deliberately uses accentMuted, not accent: at full accent
+  // (#B8862E) this measured only 2.89:1 against background/surface —
+  // below the 3:1 non-text-contrast floor once it's a chart bar/dot
+  // fill rather than the small icon/text use the raw accent was tuned
+  // for. accentMuted (#8C6423) hits 4.74:1/5.30:1, still the same gold
+  // family. See DECISIONS.md.
+  chartFuel: "#8C6423",
   chartService: "#5A7690",
   chartCharging: "#2E6B63",
 };

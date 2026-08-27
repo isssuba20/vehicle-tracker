@@ -17,6 +17,7 @@ export function ServiceTab() {
   const { serviceByVehicle, loadVehicleDetail, deleteServiceEntry } = useAppStore();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<ServiceLogEntry | undefined>(undefined);
+  const [duplicateEntry, setDuplicateEntry] = useState<ServiceLogEntry | undefined>(undefined);
   const insets = useSafeAreaInsets();
   const colors = useThemeStore((s) => s.colors);
   const currencyCode = useCurrencyStore((s) => s.code);
@@ -30,11 +31,19 @@ export function ServiceTab() {
 
   function openAdd() {
     setEditingEntry(undefined);
+    setDuplicateEntry(undefined);
     setSheetOpen(true);
   }
 
   function openEdit(entry: ServiceLogEntry) {
     setEditingEntry(entry);
+    setDuplicateEntry(undefined);
+    setSheetOpen(true);
+  }
+
+  function openDuplicate(entry: ServiceLogEntry) {
+    setEditingEntry(undefined);
+    setDuplicateEntry(entry);
     setSheetOpen(true);
   }
 
@@ -67,6 +76,15 @@ export function ServiceTab() {
                 <Text style={styles.cost}>{formatMoney(item.cost, currencyCode)}</Text>
                 <Pressable
                   style={styles.deleteIcon}
+                  onPress={() => openDuplicate(item)}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Duplicate ${item.type} entry from ${formatDate(item.date)}`}
+                >
+                  <Ionicons name="copy-outline" size={16} color={colors.textFaint} />
+                </Pressable>
+                <Pressable
+                  style={styles.deleteIcon}
                   onPress={() => handleDelete(item)}
                   hitSlop={8}
                   accessibilityRole="button"
@@ -93,6 +111,7 @@ export function ServiceTab() {
         kind="service"
         visible={sheetOpen}
         entry={editingEntry}
+        duplicateFrom={duplicateEntry}
         onClose={() => setSheetOpen(false)}
       />
     </View>

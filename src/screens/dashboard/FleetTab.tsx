@@ -1,6 +1,7 @@
-import React from "react";
-import { View, Text, FlatList, RefreshControl, StyleSheet } from "react-native";
+import React, { useMemo, useState } from "react";
+import { View, Text, TextInput, Pressable, FlatList, RefreshControl, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { CompositeNavigationProp } from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -11,6 +12,9 @@ import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { EfficiencyDisplay } from "@/utils/vehicleEfficiencyDisplay";
+
+/** Below this fleet size a search bar is just clutter — nothing to narrow down yet. */
+const SEARCH_MIN_VEHICLES = 4;
 
 type DashboardNav = CompositeNavigationProp<
   BottomTabNavigationProp<TabParamList, "Dashboard">,
@@ -38,11 +42,46 @@ export function FleetTab({
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
   const insets = useSafeAreaInsets();
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return vehicles;
+    return vehicles.filter((v) =>
+      [v.name, v.make, v.model, v.plateNumber].some((field) => field.toLowerCase().includes(q))
+    );
+  }, [vehicles, query]);
+
+  const showSearch = vehicles.length >= SEARCH_MIN_VEHICLES;
 
   return (
     <View style={styles.container}>
+      {showSearch && (
+        <View style={styles.searchBar}>
+          <Ionicons name="search-outline" size={16} color={colors.textFaint} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search by name, make, model, or plate"
+            placeholderTextColor={colors.textFaint}
+            value={query}
+            onChangeText={setQuery}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          {query.length > 0 && (
+            <Pressable
+              onPress={() => setQuery("")}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Clear search"
+            >
+              <Ionicons name="close-circle" size={16} color={colors.textFaint} />
+            </Pressable>
+          )}
+        </View>
+      )}
       <FlatList
-        data={vehicles}
+        data={filtered}
         keyExtractor={(v) => v.id}
         style={styles.list}
         contentContainerStyle={{ paddingTop: spacing.md, paddingBottom: spacing.md }}
@@ -52,9 +91,11 @@ export function FleetTab({
         }
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>No vehicles yet</Text>
+            <Text style={styles.emptyTitle}>{query ? "No matches" : "No vehicles yet"}</Text>
             <Text style={styles.emptyBody}>
-              Add your first vehicle to start tracking service, fuel, and renewals.
+              {query
+                ? "Try a different name, make, model, or plate number."
+                : "Add your first vehicle to start tracking service, fuel, and renewals."}
             </Text>
           </View>
         }
@@ -87,6 +128,26 @@ const makeStyles = (colors: ThemeColors) =>
     },
     list: {
       paddingHorizontal: spacing.md,
+    },
+    searchBar: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.xs,
+      marginHorizontal: spacing.md,
+      marginTop: spacing.md,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs + 2,
+      borderRadius: radii.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+    },
+    searchInput: {
+      flex: 1,
+      fontFamily: fonts.body,
+      fontSize: 14,
+      color: colors.textPrimary,
+      padding: 0,
     },
     footer: {
       paddingHorizontal: spacing.md,
