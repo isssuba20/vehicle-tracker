@@ -492,6 +492,45 @@ onward it will. No native module added — `expo-updates` was already a
 dependency (Settings' manual check used it) — so this ships as a
 normal OTA update, not a new `eas build`.
 
+## Accessibility pass: icon-only buttons had zero accessibilityLabel usage
+
+Audited the app for icon-only touch targets (an Ionicons icon with no
+adjacent text — a screen reader falls back to reading the icon's
+internal glyph name, or nothing) and found the app had **zero**
+`accessibilityLabel` usages anywhere. Buttons that already pair an icon
+with visible text (PhotoActionSheet's "Take photo"/"Choose from
+library"/"Remove photo", MarkDoneSheet's Save/Cancel) were already
+fine — RN uses the child Text as the accessible name automatically.
+Added labels to the ones that weren't:
+
+- `ThemeToggle` — "Switch to light/dark theme" (state-dependent)
+- Vehicle Detail's share icon — "Share vehicle history report"
+- `UpdateBanner`'s dismiss (×) and Restart buttons; the decorative
+  sparkles icon is now `importantForAccessibility="no"` so it doesn't
+  add noise before the text a screen reader should read
+- The delete (trash) icon on every Service/Fuel/Charging log row —
+  labeled with the entry's type + date (e.g. "Delete Oil change entry
+  from Jan 15, 2026") so multiple rows don't all announce as an
+  identical unlabeled "Delete"
+- `VehicleCard`'s photo-avatar button — "Change photo for {name}"
+- `VehicleCard`'s three status dots (registration/insurance/PMS) —
+  previously three colored dots with **no label at all**, meaningless
+  to a screen reader (and honestly cryptic sighted, too, without
+  already knowing the fixed order) — now one combined label:
+  "Registration ok, insurance due soon, next service overdue"
+
+Pure a11y/UX metadata — no visual or behavioral change, no schema
+impact.
+
+## Activity feed: category-colored dot per row
+
+`ActivityFeed` rows (Trends tab) previously had no visual tie to the
+Trends tab's own `SpendByCategoryChart` legend just above it — same
+categories, no shared color. Added a small colored dot per row using
+the same `theme.chartFuel/chartService/chartCharging` tokens the chart
+already uses, so a fuel row and the "Fuel" bar in the chart read as
+the same thing at a glance. No new colors, no schema change.
+
 ## Card usage in Vehicle Detail → Overview tab
 
 The brief says not to wrap every section in a card. Kept "At a glance" (the

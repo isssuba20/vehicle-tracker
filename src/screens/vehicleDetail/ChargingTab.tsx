@@ -77,7 +77,13 @@ export function ChargingTab() {
                 {formatKmPerKwh(item.kmPerKwh, item.implausible)}
               </Text>
             </View>
-            <Pressable style={styles.deleteIcon} onPress={() => handleDelete(item)} hitSlop={8}>
+            <Pressable
+              style={styles.deleteIcon}
+              onPress={() => handleDelete(item)}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={`Delete charging entry from ${formatDate(item.date)}`}
+            >
               <Ionicons name="trash-outline" size={16} color={colors.textFaint} />
             </Pressable>
           </Pressable>

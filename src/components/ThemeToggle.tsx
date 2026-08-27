@@ -12,6 +12,8 @@ export function ThemeToggle({ colors }: { colors: ThemeColors }) {
     <Pressable
       onPress={toggle}
       hitSlop={8}
+      accessibilityRole="button"
+      accessibilityLabel={mode === "dark" ? "Switch to light theme" : "Switch to dark theme"}
       style={[styles.button, { backgroundColor: colors.surface, borderColor: colors.border }]}
     >
       <Ionicons

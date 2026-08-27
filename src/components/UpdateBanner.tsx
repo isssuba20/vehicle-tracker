@@ -22,8 +22,11 @@ export function UpdateBanner({ visible }: { visible: boolean }) {
   if (!visible || dismissed) return null;
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + spacing.xs }]}>
-      <Ionicons name="sparkles-outline" size={16} color={colors.onAccent} />
+    <View
+      style={[styles.container, { paddingTop: insets.top + spacing.xs }]}
+      accessibilityRole="alert"
+    >
+      <Ionicons name="sparkles-outline" size={16} color={colors.onAccent} importantForAccessibility="no" />
       <Text style={styles.text}>An update is ready</Text>
       <Pressable
         style={styles.restartButton}
@@ -32,10 +35,18 @@ export function UpdateBanner({ visible }: { visible: boolean }) {
           setRestarting(true);
           Updates.reloadAsync().catch(() => setRestarting(false));
         }}
+        accessibilityRole="button"
+        accessibilityLabel={restarting ? "Restarting" : "Restart app to apply update"}
       >
         <Text style={styles.restartText}>{restarting ? "Restarting…" : "Restart"}</Text>
       </Pressable>
-      <Pressable style={styles.dismissButton} onPress={() => setDismissed(true)} hitSlop={8}>
+      <Pressable
+        style={styles.dismissButton}
+        onPress={() => setDismissed(true)}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel="Dismiss update notification"
+      >
         <Ionicons name="close" size={16} color={colors.onAccent} />
       </Pressable>
     </View>

@@ -76,7 +76,13 @@ export function VehicleDetailScreen({ route, navigation }: Props) {
         </View>
         <View style={styles.headerActions}>
           <ThemeToggle colors={colors} />
-          <Pressable style={styles.iconButton} onPress={handleShare} hitSlop={8}>
+          <Pressable
+            style={styles.iconButton}
+            onPress={handleShare}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Share vehicle history report"
+          >
             <Ionicons name="share-outline" size={18} color={colors.textPrimary} />
           </Pressable>
           <Pressable

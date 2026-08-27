@@ -14,6 +14,11 @@ const CATEGORY_VERB: Record<UnifiedExpense["category"], string> = {
 export function ActivityFeed({ expenses, currencyCode }: { expenses: UnifiedExpense[]; currencyCode: string }) {
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
+  const categoryColor: Record<UnifiedExpense["category"], string> = {
+    fuel: colors.chartFuel,
+    service: colors.chartService,
+    charging: colors.chartCharging,
+  };
 
   if (expenses.length === 0) {
     return (
@@ -27,6 +32,7 @@ export function ActivityFeed({ expenses, currencyCode }: { expenses: UnifiedExpe
     <View style={styles.container}>
       {expenses.slice(0, 6).map((e, i) => (
         <View key={e.id} style={[styles.row, i > 0 && styles.rowDivider]}>
+          <View style={[styles.dot, { backgroundColor: categoryColor[e.category] }]} />
           <View style={styles.rowContent}>
             <Text style={styles.title}>
               {e.category === "service" ? e.label : CATEGORY_VERB[e.category]} — {e.vehicleName}
@@ -57,6 +63,12 @@ const makeStyles = (colors: ThemeColors) =>
     rowDivider: {
       borderTopWidth: StyleSheet.hairlineWidth,
       borderTopColor: colors.border,
+    },
+    dot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      marginRight: spacing.sm,
     },
     rowContent: {
       flex: 1,

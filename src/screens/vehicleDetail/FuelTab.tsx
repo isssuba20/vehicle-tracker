@@ -77,7 +77,13 @@ export function FuelTab() {
                 {formatKmPerLiter(item.kmPerLiter, item.implausible)}
               </Text>
             </View>
-            <Pressable style={styles.deleteIcon} onPress={() => handleDelete(item)} hitSlop={8}>
+            <Pressable
+              style={styles.deleteIcon}
+              onPress={() => handleDelete(item)}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={`Delete fuel entry from ${formatDate(item.date)}`}
+            >
               <Ionicons name="trash-outline" size={16} color={colors.textFaint} />
             </Pressable>
           </Pressable>

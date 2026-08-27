@@ -65,7 +65,13 @@ export function ServiceTab() {
               <Text style={styles.type}>{item.type}</Text>
               <View style={styles.rowTopRight}>
                 <Text style={styles.cost}>{formatMoney(item.cost, currencyCode)}</Text>
-                <Pressable style={styles.deleteIcon} onPress={() => handleDelete(item)} hitSlop={8}>
+                <Pressable
+                  style={styles.deleteIcon}
+                  onPress={() => handleDelete(item)}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Delete ${item.type} entry from ${formatDate(item.date)}`}
+                >
                   <Ionicons name="trash-outline" size={16} color={colors.textFaint} />
                 </Pressable>
               </View>

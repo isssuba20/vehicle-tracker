@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Pressable, Image, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Vehicle } from "@/types/models";
+import { Vehicle, Urgency } from "@/types/models";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { dateUrgency, pmsUrgency, worseOf } from "@/utils/urgency";
@@ -11,6 +11,8 @@ import { usePhotoPicker } from "@/utils/usePhotoPicker";
 import { PhotoActionSheet } from "./PhotoActionSheet";
 import { AnimatedPressable } from "./AnimatedPressable";
 import { UrgencyDot } from "./UrgencyDot";
+
+const URGENCY_SPOKEN: Record<Urgency, string> = { ok: "ok", due_soon: "due soon", overdue: "overdue" };
 
 export function VehicleCard({
   vehicle,
@@ -47,7 +49,12 @@ export function VehicleCard({
   return (
     <AnimatedPressable onPress={onPress} style={styles.card} scaleTo={0.98}>
       <View style={styles.header}>
-        <Pressable onPress={openPicker} style={styles.avatar}>
+        <Pressable
+          onPress={openPicker}
+          style={styles.avatar}
+          accessibilityRole="button"
+          accessibilityLabel={`Change photo for ${vehicle.name}`}
+        >
           {vehicle.photoUri ? (
             <Image source={{ uri: vehicle.photoUri }} style={styles.avatarImage} />
           ) : (
@@ -61,7 +68,11 @@ export function VehicleCard({
             {driverName ? ` · ${driverName}` : ""}
           </Text>
         </View>
-        <View style={styles.dots}>
+        <View
+          style={styles.dots}
+          accessible
+          accessibilityLabel={`Registration ${URGENCY_SPOKEN[registration]}, insurance ${URGENCY_SPOKEN[insurance]}, next service ${URGENCY_SPOKEN[pms]}`}
+        >
           <UrgencyDot urgency={registration} />
           <UrgencyDot urgency={insurance} />
           <UrgencyDot urgency={pms} />
