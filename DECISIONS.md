@@ -531,6 +531,59 @@ the same `theme.chartFuel/chartService/chartCharging` tokens the chart
 already uses, so a fuel row and the "Fuel" bar in the chart read as
 the same thing at a glance. No new colors, no schema change.
 
+## Bug: floating "+ Log/Add" buttons overlapped list content
+
+User-reported (screenshot): the Dashboard's "+ Add a vehicle" button
+rendered on top of a vehicle card, obscuring its text. Root cause:
+every one of these buttons (`HomeTab`'s Add vehicle, and Service/Fuel/
+Charging tabs' "+ Log…" buttons) used `position: "absolute"` pinned to
+the bottom of their container, floating *over* the scrollable list —
+a classic Material FAB pattern, but here the list's bottom padding
+(`spacing.xl * 3`) wasn't reliably larger than the button's actual
+footprint across devices/insets, so it could sit on top of unscrolled
+content instead of just below it.
+
+Fixed by making the button a genuine flex footer instead of an
+absolute overlay: the button now lives in a sibling `View` *below* the
+`FlatList` (not inside it, not layered over it), with the list given
+`flex: 1` so it fills exactly the remaining space above the footer.
+This guarantees zero overlap by construction, at any list length or
+device inset, rather than depending on tuned padding numbers. Applied
+identically to all four "+ …" buttons in the app (Dashboard, Service,
+Fuel, Charging tabs) since they all had the same bug.
+
+## Dashboard restructured: Home / Fleet / Trends (was Home / Trends)
+
+Two follow-up requests after the Home/Trends split:
+
+1. Group "things that need your attention" by vehicle and make each
+   group collapsible, so a household with several vehicles overdue on
+   several things doesn't turn Home into a long flat list. `ActionCenter`
+   now groups its `items` by `vehicleId`, sorted by that vehicle's worst
+   urgency (items already arrive sorted overall, so grouping preserves
+   "most urgent vehicle first"). Each group header shows the vehicle
+   name, item count, and a worst-urgency color bar; **all groups start
+   collapsed** — this scales to any fleet size instead of getting more
+   crowded as vehicles are added, and the header count is still visible
+   without expanding anything.
+2. Move the fleet vehicle list itself out of Home entirely, into a new
+   **Fleet** tab. Home is now reserved strictly for what needs
+   attention — the greeting, an "all caught up" state, and the grouped
+   Action Center — with room to add other attention-worthy content
+   later without it competing with "browse my vehicles" for space.
+   `getActionItems()` already only returns overdue + due-soon items
+   (30-day / 500km window, unchanged), so "near-due (1 month before)"
+   was already the existing behavior — no logic change there, just
+   giving Home a tab of its own instead of sharing space with the fleet
+   list.
+
+New `src/screens/dashboard/FleetTab.tsx` holds what Home used to:
+vehicle cards, empty state, "+ Add a vehicle" footer. Dashboard is now
+3 top tabs: Home, Fleet, Trends.
+
+No schema changes — pure UI reorganization + one component (ActionCenter)
+gaining grouping/collapse state.
+
 ## Card usage in Vehicle Detail → Overview tab
 
 The brief says not to wrap every section in a card. Kept "At a glance" (the

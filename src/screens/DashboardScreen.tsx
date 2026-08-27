@@ -7,6 +7,7 @@ import { useAppStore } from "@/state/store";
 import { useCurrencyStore } from "@/state/useCurrencyStore";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { HomeTab } from "./dashboard/HomeTab";
+import { FleetTab } from "./dashboard/FleetTab";
 import { TrendsTab } from "./dashboard/TrendsTab";
 import { MarkDoneSheet, RenewalKind } from "./vehicleDetail/MarkDoneSheet";
 import { fonts, spacing, ThemeColors } from "@/theme/theme";
@@ -140,14 +141,22 @@ export function DashboardScreen({ navigation }: Props) {
         <Tab.Screen name="Home">
           {() => (
             <HomeTab
+              actionItems={actionItems}
+              currentMemberName={currentMemberName}
+              onMarkDone={openMarkDone}
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+            />
+          )}
+        </Tab.Screen>
+        <Tab.Screen name="Fleet">
+          {() => (
+            <FleetTab
               navigation={navigation}
               vehicles={vehicles}
-              actionItems={actionItems}
               efficiencyByVehicle={efficiencyByVehicle}
               memberNameById={memberNameById}
-              currentMemberName={currentMemberName}
               updateVehicle={updateVehicle}
-              onMarkDone={openMarkDone}
               refreshing={refreshing}
               onRefresh={handleRefresh}
             />

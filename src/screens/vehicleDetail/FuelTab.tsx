@@ -54,7 +54,7 @@ export function FuelTab() {
       <FlatList
         data={entries}
         keyExtractor={(e) => e.id}
-        contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.xl * 3 }}
+        contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.md }}
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={styles.emptyTitle}>No fuel logs yet</Text>
@@ -89,12 +89,11 @@ export function FuelTab() {
           </Pressable>
         )}
       />
-      <AnimatedPressable
-        style={[styles.addButton, { bottom: spacing.md + insets.bottom }]}
-        onPress={openAdd}
-      >
-        <Text style={styles.addButtonText}>+ Log fuel</Text>
-      </AnimatedPressable>
+      <View style={[styles.footer, { paddingBottom: spacing.md + insets.bottom }]}>
+        <AnimatedPressable style={styles.addButton} onPress={openAdd}>
+          <Text style={styles.addButtonText}>+ Log fuel</Text>
+        </AnimatedPressable>
+      </View>
       <QuickAddSheet
         kind="fuel"
         visible={sheetOpen}
@@ -169,10 +168,13 @@ const makeStyles = (colors: ThemeColors) =>
       color: colors.textMuted,
       textAlign: "center",
     },
+    footer: {
+      paddingHorizontal: spacing.md,
+      paddingTop: spacing.sm,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
+    },
     addButton: {
-      position: "absolute",
-      left: spacing.md,
-      right: spacing.md,
       backgroundColor: colors.accent,
       borderRadius: radii.lg,
       paddingVertical: spacing.md,

@@ -1,23 +1,9 @@
 import React from "react";
-import { View, Text, FlatList, RefreshControl, StyleSheet } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { CompositeNavigationProp } from "@react-navigation/native";
-import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { TabParamList, RootStackParamList } from "@/navigation/types";
-import { Vehicle } from "@/types/models";
-import { VehicleCard } from "@/components/VehicleCard";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
+import { ScrollView, Text, View, RefreshControl, StyleSheet } from "react-native";
 import { ActionCenter } from "@/components/ActionCenter";
-import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
+import { fonts, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
-import { EfficiencyDisplay } from "@/utils/vehicleEfficiencyDisplay";
 import { ActionItem } from "@/services/fleetAnalytics";
-
-type DashboardNav = CompositeNavigationProp<
-  BottomTabNavigationProp<TabParamList, "Dashboard">,
-  NativeStackNavigationProp<RootStackParamList>
->;
 
 function greeting(): string {
   const hour = new Date().getHours();
@@ -26,94 +12,59 @@ function greeting(): string {
   return "Good evening";
 }
 
-/** The day-to-day tab: what needs attention right now, and the fleet itself. */
+/**
+ * What needs attention right now — overdue and near-due (within the
+ * usual 30-day/500km "due soon" window) items only. The fleet list
+ * itself lives on the Fleet tab; this tab stays reserved for
+ * attention-worthy items so it never grows past what's actually urgent.
+ */
 export function HomeTab({
-  navigation,
-  vehicles,
   actionItems,
-  efficiencyByVehicle,
-  memberNameById,
   currentMemberName,
-  updateVehicle,
   onMarkDone,
   refreshing,
   onRefresh,
 }: {
-  navigation: DashboardNav;
-  vehicles: Vehicle[];
   actionItems: ActionItem[];
-  efficiencyByVehicle: Record<string, EfficiencyDisplay>;
-  memberNameById: Record<string, string>;
   currentMemberName: string | undefined;
-  updateVehicle: (v: Vehicle) => void;
   onMarkDone: (item: ActionItem) => void;
   refreshing: boolean;
   onRefresh: () => void;
 }) {
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
-  const insets = useSafeAreaInsets();
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={vehicles}
-        keyExtractor={(v) => v.id}
-        contentContainerStyle={{ paddingTop: spacing.md, paddingBottom: spacing.xl * 3 }}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />
-        }
-        ListHeaderComponent={
-          <>
-            <Text style={styles.greeting}>
-              {greeting()}
-              {currentMemberName ? `, ${currentMemberName}` : ""}
-            </Text>
-            <Text style={styles.greetingSub}>
-              {actionItems.length === 0
-                ? "Your household is all caught up"
-                : `${actionItems.length} thing${actionItems.length === 1 ? "" : "s"} need${
-                    actionItems.length === 1 ? "s" : ""
-                  } your attention`}
-            </Text>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingTop: spacing.md, paddingBottom: spacing.xl }}
+      showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+    >
+      <Text style={styles.greeting}>
+        {greeting()}
+        {currentMemberName ? `, ${currentMemberName}` : ""}
+      </Text>
+      <Text style={styles.greetingSub}>
+        {actionItems.length === 0
+          ? "Your household is all caught up"
+          : `${actionItems.length} thing${actionItems.length === 1 ? "" : "s"} need${
+              actionItems.length === 1 ? "s" : ""
+            } your attention`}
+      </Text>
 
-            {actionItems.length > 0 && (
-              <View style={styles.section}>
-                <ActionCenter items={actionItems} onMarkDone={onMarkDone} />
-              </View>
-            )}
-
-            {vehicles.length > 0 && <Text style={styles.sectionTitle}>Your fleet</Text>}
-          </>
-        }
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>No vehicles yet</Text>
-            <Text style={styles.emptyBody}>
-              Add your first vehicle to start tracking service, fuel, and renewals.
-            </Text>
-          </View>
-        }
-        renderItem={({ item }) => (
-          <VehicleCard
-            vehicle={item}
-            efficiency={
-              efficiencyByVehicle[item.id] ?? { label: "Fuel efficiency", text: "—", implausible: false }
-            }
-            driverName={item.primaryDriverUserId ? memberNameById[item.primaryDriverUserId] : undefined}
-            onPress={() => navigation.navigate("VehicleDetail", { vehicleId: item.id })}
-            onPhotoChange={(photoUri) => updateVehicle({ ...item, photoUri })}
-          />
-        )}
-      />
-      <AnimatedPressable
-        style={[styles.addButton, { bottom: spacing.md + insets.bottom }]}
-        onPress={() => navigation.navigate("AddEditVehicle", {})}
-      >
-        <Text style={styles.addButtonText}>+ Add a vehicle</Text>
-      </AnimatedPressable>
-    </View>
+      {actionItems.length > 0 ? (
+        <View style={styles.section}>
+          <ActionCenter items={actionItems} onMarkDone={onMarkDone} />
+        </View>
+      ) : (
+        <View style={styles.caughtUp}>
+          <Text style={styles.caughtUpText}>
+            No overdue or upcoming renewals right now — check back here whenever something needs a look.
+          </Text>
+        </View>
+      )}
+    </ScrollView>
   );
 }
 
@@ -138,44 +89,15 @@ const makeStyles = (colors: ThemeColors) =>
     section: {
       marginTop: spacing.lg,
     },
-    sectionTitle: {
-      fontFamily: fonts.body,
-      fontSize: 12,
-      textTransform: "uppercase",
-      letterSpacing: 0.5,
-      color: colors.textFaint,
-      marginBottom: spacing.sm,
-      marginTop: spacing.lg,
-    },
-    empty: {
-      paddingVertical: spacing.xl,
+    caughtUp: {
+      marginTop: spacing.xl,
       alignItems: "center",
+      paddingHorizontal: spacing.lg,
     },
-    emptyTitle: {
-      fontFamily: fonts.bodySemiBold,
-      fontSize: 16,
-      color: colors.textPrimary,
-      marginBottom: spacing.xs,
-    },
-    emptyBody: {
+    caughtUpText: {
       fontFamily: fonts.body,
       fontSize: 14,
       color: colors.textMuted,
       textAlign: "center",
-      paddingHorizontal: spacing.lg,
-    },
-    addButton: {
-      position: "absolute",
-      left: spacing.md,
-      right: spacing.md,
-      backgroundColor: colors.accent,
-      borderRadius: radii.lg,
-      paddingVertical: spacing.md,
-      alignItems: "center",
-    },
-    addButtonText: {
-      fontFamily: fonts.bodySemiBold,
-      fontSize: 16,
-      color: colors.onAccent,
     },
   });
