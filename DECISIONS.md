@@ -375,6 +375,46 @@ the top tab bar to keep labels legible instead of squeezing 5 fixed-width
 tabs onto one row — same navigator, no new dependency. Pure UI
 reorganization: no data, store, or route-param changes, no schema impact.
 
+## Dashboard split: Home vs. Trends, and real charts instead of only cards
+
+Dashboard had grown into one long scroll: greeting, Action Center, fleet
+list, Fleet Intelligence, cost-to-own comparison, budget, and recent
+activity, all stacked. Split into two top tabs (same
+`material-top-tabs` pattern Vehicle Detail already uses):
+
+- **Home**: greeting, Action Center, the fleet list, "+ Add a vehicle."
+  The day-to-day tab — what needs attention, what you own.
+- **Trends** (new): monthly spending trend chart, spend-by-category
+  chart, Fleet Intelligence, cost-to-own comparison, household budget,
+  recent activity. Everything derived from spending history, grouped
+  together — nothing here is edited, only read.
+
+Also added two chart components since the request was specifically for
+charts, not just more cards:
+
+- `SpendTrendChart` — single-hue bar chart of the last 6 calendar
+  months' total household spend (`getMonthlySpendSeries()`, new in
+  `fleetAnalytics.ts`). One series, one hue — the current month's bar
+  uses the brighter accent, past months use the muted variant, so the
+  present month reads first without adding a second color that would
+  imply a second measure.
+- `SpendByCategoryChart` — horizontal bars comparing fuel/service/
+  charging totals, each in a fixed categorical color
+  (`theme.chartFuel/chartService/chartCharging`, new tokens — never
+  reused for status meaning elsewhere, never cycled). A category with
+  zero spend is omitted, not shown as an empty bar — an all-gas
+  household never sees a meaningless "Charging" row.
+
+Both are hand-built with plain Views/flexbox, not a charting library —
+no `react-native-svg`/Victory/etc. added, so this ships via OTA like
+every other JS-only change this session, consistent with the running
+"don't add a dependency for one feature" rule. Both show an honest
+empty state ("log fuel/service/charging entries…") when there's no
+spend at all, rather than an empty chart.
+
+Pure UI reorganization + two new derived-view chart components — no
+data, store, route, or schema changes.
+
 ## Card usage in Vehicle Detail → Overview tab
 
 The brief says not to wrap every section in a card. Kept "At a glance" (the

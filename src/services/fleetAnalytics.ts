@@ -93,6 +93,35 @@ export function getSpendingTrend(expenses: UnifiedExpense[]): SpendingTrend | nu
   return { thisMonth, lastMonth, percentChange: ((thisMonth - lastMonth) / lastMonth) * 100 };
 }
 
+export interface MonthlySpend {
+  monthKey: string; // "YYYY-MM"
+  monthLabel: string; // "Jan"
+  total: number;
+}
+
+/** Last `months` calendar months (oldest first), including months with zero spend, for a trend chart. */
+export function getMonthlySpendSeries(expenses: UnifiedExpense[], months = 6): MonthlySpend[] {
+  const totalsByKey = new Map<string, number>();
+  for (const e of expenses) {
+    const key = monthKey(e.date);
+    totalsByKey.set(key, (totalsByKey.get(key) ?? 0) + e.cost);
+  }
+
+  const series: MonthlySpend[] = [];
+  for (let i = months - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(1); // avoid month-length rollover (e.g. Mar 31 - 1mo != Feb)
+    d.setMonth(d.getMonth() - i);
+    const key = monthKey(d.toISOString());
+    series.push({
+      monthKey: key,
+      monthLabel: d.toLocaleDateString("en-US", { month: "short" }),
+      total: totalsByKey.get(key) ?? 0,
+    });
+  }
+  return series;
+}
+
 export interface VehicleSpend {
   vehicleId: string;
   vehicleName: string;

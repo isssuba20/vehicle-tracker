@@ -28,6 +28,13 @@ export interface ThemeColors {
   // fine as text, so these just equal them.
   okBright: string;
   overdueBright: string;
+
+  // Fixed categorical hues for the spending-by-category chart (fuel/
+  // service/charging) — a small, deliberately ordered set, never cycled
+  // or reused for status meaning elsewhere.
+  chartFuel: string;
+  chartService: string;
+  chartCharging: string;
 }
 
 /**
@@ -56,6 +63,10 @@ export const darkColors: ThemeColors = {
 
   okBright: "#4FA89C",
   overdueBright: "#E06A56",
+
+  chartFuel: "#D9A23A",
+  chartService: "#6C89A6",
+  chartCharging: "#4FA89C",
 };
 
 /**
@@ -85,6 +96,10 @@ export const lightColors: ThemeColors = {
 
   okBright: "#2E6B63",
   overdueBright: "#C1483A",
+
+  chartFuel: "#B8862E",
+  chartService: "#5A7690",
+  chartCharging: "#2E6B63",
 };
 
 export const fonts = {
