@@ -8,7 +8,8 @@ import { useCurrencyStore } from "@/state/useCurrencyStore";
 import { PredictedMaintenanceCard } from "@/components/PredictedMaintenanceCard";
 import { getMaintenancePredictions } from "@/services/maintenancePrediction";
 import { OwnershipCostCard } from "@/components/OwnershipCostCard";
-import { getAllExpenses } from "@/services/fleetAnalytics";
+import { SpendByCategoryChart } from "@/components/charts/SpendByCategoryChart";
+import { getAllExpenses, getSpendByCategory } from "@/services/fleetAnalytics";
 import { getVehicleOwnershipCost } from "@/services/ownershipCost";
 import { TripCostSheet } from "./TripCostSheet";
 
@@ -37,15 +38,19 @@ export function InsightsTab() {
     [serviceEntries, vehicle.currentOdometerKm]
   );
 
-  const ownershipCost = useMemo(() => {
-    const expenses = getAllExpenses(
-      [vehicle],
-      { [vehicle.id]: fuelByVehicle[vehicle.id] ?? [] },
-      { [vehicle.id]: serviceEntries },
-      { [vehicle.id]: chargingByVehicle[vehicle.id] ?? [] }
-    );
-    return getVehicleOwnershipCost(vehicle, expenses);
-  }, [vehicle, fuelByVehicle, serviceEntries, chargingByVehicle]);
+  const expenses = useMemo(
+    () =>
+      getAllExpenses(
+        [vehicle],
+        { [vehicle.id]: fuelByVehicle[vehicle.id] ?? [] },
+        { [vehicle.id]: serviceEntries },
+        { [vehicle.id]: chargingByVehicle[vehicle.id] ?? [] }
+      ),
+    [vehicle, fuelByVehicle, serviceEntries, chargingByVehicle]
+  );
+
+  const ownershipCost = useMemo(() => getVehicleOwnershipCost(vehicle, expenses), [vehicle, expenses]);
+  const categoryTotals = useMemo(() => getSpendByCategory(expenses), [expenses]);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: spacing.xl }}>
@@ -67,6 +72,11 @@ export function InsightsTab() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Ownership cost</Text>
         <OwnershipCostCard cost={ownershipCost} currencyCode={currencyCode} />
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Where it goes</Text>
+        <SpendByCategoryChart totals={categoryTotals} currencyCode={currencyCode} />
       </View>
 
       <View style={styles.section}>

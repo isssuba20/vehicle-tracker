@@ -2,6 +2,13 @@ import React, { useRef } from "react";
 import { Animated, Pressable, PressableProps, ViewStyle, StyleProp } from "react-native";
 import * as Haptics from "expo-haptics";
 
+// Animating the Pressable directly (rather than wrapping a plain
+// Pressable around an inner Animated.View) so layout props in `style`
+// (flex, width, ...) land on the element that actually participates in
+// the parent's flex layout — a nested inner view's flex/width has no
+// effect on how its own unstyled Pressable parent sizes in a flex row.
+const AnimatedPressableBase = Animated.createAnimatedComponent(Pressable);
+
 /**
  * A Pressable with a restrained scale-down on press (150-250ms, matching
  * the app's "subtle micro-interaction" design direction — no bounce) and
@@ -43,16 +50,15 @@ export function AnimatedPressable({
   }
 
   return (
-    <Pressable
+    <AnimatedPressableBase
       onPressIn={pressIn}
       onPressOut={pressOut}
       onPress={handlePress}
       disabled={disabled}
+      style={[style, { transform: [{ scale }] }, disabled && { opacity: 0.6 }]}
       {...props}
     >
-      <Animated.View style={[style, { transform: [{ scale }] }, disabled && { opacity: 0.6 }]}>
-        {children}
-      </Animated.View>
-    </Pressable>
+      {children}
+    </AnimatedPressableBase>
   );
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import { ScrollView, Text, View, StyleSheet } from "react-native";
+import { ScrollView, Text, View, RefreshControl, StyleSheet } from "react-native";
 import { Group } from "@/types/models";
 import { FleetIntelligenceCard } from "@/components/FleetIntelligenceCard";
 import { HouseholdBudgetCard } from "@/components/HouseholdBudgetCard";
@@ -24,6 +24,8 @@ export function TrendsTab({
   household,
   currencyCode,
   ownershipComparison,
+  refreshing,
+  onRefresh,
 }: {
   insights: Insight[];
   expenses: UnifiedExpense[];
@@ -33,6 +35,8 @@ export function TrendsTab({
   household: Group | undefined;
   currencyCode: string;
   ownershipComparison: OwnershipComparison | null;
+  refreshing: boolean;
+  onRefresh: () => void;
 }) {
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
@@ -42,6 +46,7 @@ export function TrendsTab({
       style={styles.container}
       contentContainerStyle={{ paddingTop: spacing.md, paddingBottom: spacing.xl * 2 }}
       showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.sectionTitle}>Monthly spending</Text>
       <View style={styles.section}>

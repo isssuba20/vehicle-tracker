@@ -41,14 +41,29 @@ export function DashboardScreen({ navigation }: Props) {
     members,
     loadMembers,
     currentUserId,
+    refreshVehicles,
+    refreshGroups,
   } = useAppStore();
   const colors = useThemeStore((s) => s.colors);
   const currencyCode = useCurrencyStore((s) => s.code);
   const styles = makeStyles(colors);
   const insets = useSafeAreaInsets();
   const [markDone, setMarkDone] = useState<{ kind: RenewalKind; vehicleId: string } | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const groupId = groupIds[0];
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    try {
+      await refreshVehicles();
+      await refreshGroups();
+      await Promise.all(vehicles.map((v) => loadVehicleDetail(v.id)));
+      if (groupId) await loadMembers(groupId);
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   useEffect(() => {
     // Prime fuel/service/charging history for each vehicle so the dashboard
@@ -133,6 +148,8 @@ export function DashboardScreen({ navigation }: Props) {
               currentMemberName={currentMemberName}
               updateVehicle={updateVehicle}
               onMarkDone={openMarkDone}
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
             />
           )}
         </Tab.Screen>
@@ -147,6 +164,8 @@ export function DashboardScreen({ navigation }: Props) {
               household={household}
               currencyCode={currencyCode}
               ownershipComparison={ownershipComparison}
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
             />
           )}
         </Tab.Screen>

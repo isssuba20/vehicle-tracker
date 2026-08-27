@@ -426,6 +426,44 @@ pick a different one. Same options, same store (`useCurrencyStore`),
 no behavior change — just collapsed to one line until the user actually
 wants to change it.
 
+## Bug: AnimatedPressable's Save/Cancel buttons rendered unequal widths
+
+User-reported (screenshot: MarkDoneSheet's Cancel button wide, Save
+narrow, though both styled `{ flex: 1, ... }` in the same row). Root
+cause: `AnimatedPressable` rendered a plain, unstyled `Pressable`
+wrapping an inner `Animated.View` that received the actual `style`
+prop — so `flex: 1` landed on the inner view, not on the outer
+`Pressable` that participates in the parent row's flex layout. The
+inner view's `flex: 1` has no effect on how its own unstyled parent
+sizes itself; the outer `Pressable` shrank to fit its content instead.
+Cancel (a plain `Pressable` elsewhere in the same row, style applied
+directly) sized correctly, making the mismatch visible.
+
+Fixed by animating the `Pressable` itself — `Animated.createAnimatedComponent(Pressable)`
+— instead of nesting a nested Animated.View, so the passed-in `style`
+(including any `flex`/`width`) and the animated `transform` land on
+the same element. This is the standard RN idiom for an animated
+pressable and avoids the whole "does layout style propagate through an
+unstyled wrapper" class of bug. Every other `AnimatedPressable` usage
+in the app (primary buttons, vehicle card, "+Log…" actions) gets the
+same fix for free, since they all went through the same component.
+
+## Dashboard/Insights: pull-to-refresh, and a per-vehicle spend chart
+
+Two follow-ups after the Dashboard/Insights split:
+
+- **Pull-to-refresh** on both Dashboard tabs (Home's FlatList, Trends'
+  ScrollView) — re-runs `refreshVehicles()`, `refreshGroups()`, each
+  vehicle's `loadVehicleDetail()`, and `loadMembers()`. No new
+  mechanism: same store actions every other mutation already calls,
+  just user-triggered instead of only firing after a write.
+- **Vehicle Detail → Insights** gets a "Where it goes" section reusing
+  `SpendByCategoryChart` (the same component the household Trends tab
+  uses) scoped to just that one vehicle — extends the charts pattern
+  down to the per-vehicle level instead of leaving it dashboard-only.
+
+No schema changes; both are pure UI/derived-view additions.
+
 ## Card usage in Vehicle Detail → Overview tab
 
 The brief says not to wrap every section in a card. Kept "At a glance" (the

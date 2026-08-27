@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import { View, Text, FlatList, RefreshControl, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CompositeNavigationProp } from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
@@ -36,6 +36,8 @@ export function HomeTab({
   currentMemberName,
   updateVehicle,
   onMarkDone,
+  refreshing,
+  onRefresh,
 }: {
   navigation: DashboardNav;
   vehicles: Vehicle[];
@@ -45,6 +47,8 @@ export function HomeTab({
   currentMemberName: string | undefined;
   updateVehicle: (v: Vehicle) => void;
   onMarkDone: (item: ActionItem) => void;
+  refreshing: boolean;
+  onRefresh: () => void;
 }) {
   const colors = useThemeStore((s) => s.colors);
   const styles = makeStyles(colors);
@@ -57,6 +61,9 @@ export function HomeTab({
         keyExtractor={(v) => v.id}
         contentContainerStyle={{ paddingTop: spacing.md, paddingBottom: spacing.xl * 3 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />
+        }
         ListHeaderComponent={
           <>
             <Text style={styles.greeting}>
