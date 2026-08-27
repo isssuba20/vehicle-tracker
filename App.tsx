@@ -22,6 +22,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AppGate } from "@/navigation/AppGate";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { useCurrencyStore } from "@/state/useCurrencyStore";
+import { useAppUpdateCheck } from "@/hooks/useAppUpdateCheck";
+import { UpdateBanner } from "@/components/UpdateBanner";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -40,6 +42,7 @@ export default function App() {
   const { mode, colors, hydrated, init } = useThemeStore();
   const currencyHydrated = useCurrencyStore((s) => s.hydrated);
   const initCurrency = useCurrencyStore((s) => s.init);
+  const updateState = useAppUpdateCheck();
 
   useEffect(() => {
     init();
@@ -72,6 +75,7 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
+        <UpdateBanner visible={updateState === "ready"} />
         <NavigationContainer theme={navTheme}>
           <StatusBar style={mode === "dark" ? "light" : "dark"} />
           <AppGate />

@@ -464,6 +464,34 @@ Two follow-ups after the Dashboard/Insights split:
 
 No schema changes; both are pure UI/derived-view additions.
 
+## In-app OTA update notification on launch
+
+Previously the only way to get a new OTA update was Settings →
+"Check for updates" — easy to forget, so most people ran a stale build
+until they happened to think of it. Added a silent background check
+on every app launch (`useAppUpdateCheck`, new hook): calls
+`Updates.checkForUpdateAsync()` and, if one exists,
+`Updates.fetchUpdateAsync()` — same calls the manual button already
+used, just run automatically instead of waiting for the user to tap
+it.
+
+**Never auto-restarts.** Once a new bundle is downloaded, a dismissible
+`UpdateBanner` slides in at the very top of the app (above the nav
+stack, its own `insets.top` padding) with a "Restart" button — the user
+decides when to reload, so an update can't yank the screen out from
+under whatever they're doing. Dismissing just hides the banner for
+that session; the update is already downloaded and applies on the next
+natural restart regardless. Network/update-server failures are
+swallowed silently in the background check — Settings' existing manual
+button still surfaces errors there if the user goes looking.
+
+Bootstrapping note: since this check is itself JS-only code, it can
+only run once a build already contains it — the very first OTA push of
+this feature won't have notified about itself; from the next update
+onward it will. No native module added — `expo-updates` was already a
+dependency (Settings' manual check used it) — so this ships as a
+normal OTA update, not a new `eas build`.
+
 ## Card usage in Vehicle Detail → Overview tab
 
 The brief says not to wrap every section in a card. Kept "At a glance" (the
