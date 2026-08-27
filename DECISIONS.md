@@ -415,6 +415,17 @@ spend at all, rather than an empty chart.
 Pure UI reorganization + two new derived-view chart components — no
 data, store, route, or schema changes.
 
+## Currency setting: compact picker field instead of an always-expanded chip grid
+
+Settings previously showed all 8 currencies as chips in a wrapping grid
+— every option visible at once, taking 2-3 rows regardless of which was
+selected. Replaced with `CurrencyPickerField`, a single-line row (same
+shape as `DateField`: label + bordered value row + chevron) that shows
+only the selected currency; tapping it opens a small bottom sheet to
+pick a different one. Same options, same store (`useCurrencyStore`),
+no behavior change — just collapsed to one line until the user actually
+wants to change it.
+
 ## Card usage in Vehicle Detail → Overview tab
 
 The brief says not to wrap every section in a card. Kept "At a glance" (the

@@ -7,8 +7,9 @@ import { useAuthStore } from "@/state/authStore";
 import { isSupabaseConfigured } from "@/data/supabase/client";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
-import { CURRENCY_OPTIONS, useCurrencyStore } from "@/state/useCurrencyStore";
+import { useCurrencyStore } from "@/state/useCurrencyStore";
 import { TextField } from "@/components/TextField";
+import { CurrencyPickerField } from "@/components/CurrencyPickerField";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { TabScreenProps } from "@/navigation/types";
 
@@ -134,22 +135,7 @@ export function SettingsScreen({ navigation }: TabScreenProps<"Settings">) {
         <Text style={styles.sectionBody}>
           Used for purchase price, fuel, service, and charging costs across the app.
         </Text>
-        <View style={styles.currencyGrid}>
-          {CURRENCY_OPTIONS.map((opt) => {
-            const active = opt.code === currencyCode;
-            return (
-              <Pressable
-                key={opt.code}
-                style={[styles.currencyChip, active && styles.currencyChipActive]}
-                onPress={() => setCurrencyCode(opt.code)}
-              >
-                <Text style={[styles.currencyChipText, active && styles.currencyChipTextActive]}>
-                  {opt.code}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <CurrencyPickerField label="Currency" code={currencyCode} onChange={setCurrencyCode} />
       </View>
 
       <View style={styles.section}>
@@ -282,32 +268,6 @@ const makeStyles = (colors: ThemeColors) =>
       fontSize: 11,
       color: colors.textMuted,
       textTransform: "capitalize",
-    },
-    currencyGrid: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: spacing.sm,
-    },
-    currencyChip: {
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.xs + 2,
-      borderRadius: radii.sm,
-      borderWidth: 1,
-      borderColor: colors.border,
-      backgroundColor: colors.background,
-    },
-    currencyChipActive: {
-      backgroundColor: colors.accent,
-      borderColor: colors.accent,
-    },
-    currencyChipText: {
-      fontFamily: fonts.bodyMedium,
-      fontSize: 13,
-      color: colors.textMuted,
-    },
-    currencyChipTextActive: {
-      color: colors.onAccent,
-      fontFamily: fonts.bodySemiBold,
     },
     linkRow: {
       flexDirection: "row",
