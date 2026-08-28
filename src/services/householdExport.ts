@@ -1,4 +1,5 @@
 import { Vehicle, ServiceLogEntry, FuelLogEntry, ChargingLogEntry } from "@/types/models";
+import { todayIso } from "@/utils/date";
 
 type ByVehicle<T> = Record<string, T[]>;
 
@@ -30,7 +31,7 @@ export function buildHouseholdExportCsv(
 ): string {
   const lines: string[] = [];
 
-  lines.push(`Garahe household export — generated ${new Date().toISOString().slice(0, 10)} — amounts in ${currencyCode}`);
+  lines.push(`Garahe household export — generated ${todayIso()} — amounts in ${currencyCode}`);
   lines.push("");
 
   lines.push("VEHICLES");

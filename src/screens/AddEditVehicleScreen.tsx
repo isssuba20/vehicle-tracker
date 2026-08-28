@@ -13,10 +13,11 @@ import { DateField } from "@/components/DateField";
 import { PhotoPicker } from "@/components/PhotoPicker";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { Vehicle, FuelType } from "@/types/models";
+import { todayIso } from "@/utils/date";
 
 type Props = NativeStackScreenProps<RootStackParamList, "AddEditVehicle">;
 
-const TODAY = new Date().toISOString().slice(0, 10);
+const TODAY = todayIso();
 
 const FUEL_TYPE_OPTIONS: { value: FuelType; label: string }[] = [
   { value: "gas", label: "Gas" },

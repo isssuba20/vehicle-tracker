@@ -710,6 +710,58 @@ ever created alongside its first entry, so `entries.length` is never
 0), `fleetAnalytics.getSpendingTrend` (returns `null` rather than
 dividing by a zero last-month total). No further changes needed there.
 
+## Bug (significant): dates silently shifted by a day for Philippine-timezone users
+
+Widened the numeric-input sweep to dates and found the biggest bug of
+this session. Root cause, present since very early in the app: every
+date in this app is meant to be a plain calendar day ("2026-03-15"),
+but the code routinely converted between `Date` objects and those
+strings via `.toISOString()` / `new Date(isoString)` — both of which
+go through **UTC**, not the device's local timezone. For any positive
+UTC offset — the Philippines is UTC+8, this app's explicitly stated
+primary market — that conversion silently shifts the calendar date by
+a day. This wasn't a rare midnight edge case; it was reproducible
+every time, for most users.
+
+Two call sites were the sharpest edges:
+
+- **`DateField`** (the date picker used by every date field in the
+  app — vehicle purchase date, registration/insurance/PMS due dates,
+  every fuel/service/charging entry date): its `onChange` did
+  `date.toISOString().slice(0, 10)`. Whatever calendar day the native
+  picker returned (anchored to local midnight), converting through UTC
+  moved it back by 8 hours worth of date — for a PH user, **every date
+  picked from the calendar saved as one day earlier than what was
+  tapped.** Its `value={new Date(valueIso)}` had the mirror-image bug
+  on load for negative-offset users.
+- **`urgency.dateUrgency()`**: compared `new Date(expiryIso)` (UTC
+  midnight of the due date) against the exact current instant. For a
+  PH user, a renewal due "today" would flip to **overdue by local
+  mid-afternoon** — hours before the local day actually ended — because
+  the UTC-midnight anchor was already 8 hours in the past by then.
+
+Fixed with a new shared `src/utils/date.ts`:
+- `toLocalIso(d)` — a Date's own local year/month/day, never through UTC
+- `todayIso()` — today, local
+- `fromLocalIso(iso)` — parses "YYYY-MM-DD" as **local** midnight, not UTC
+
+Applied everywhere a date-only string crossed a `Date` object:
+`DateField` (both directions — the core fix), `urgency.dateUrgency()`
+(now diffs local-midnight-to-local-midnight, so overdue transitions
+land exactly at local midnight rather than at a timezone-dependent
+hour, as a clean integer day count instead of a fractional one),
+`fleetAnalytics.getMonthTotal()`/`getMonthlySpendSeries()` (previously
+computed "this month" via `toISOString()`, which could name the wrong
+month for the first ~8 local hours of a new month — directly affects
+the household budget comparison and the Trends spend chart),
+`ownershipCost.monthsSince()`, `format.formatDate()`/`formatDateShort()`
+(display-side, affects negative-offset regions), `QuickAddSheet`,
+`AddEditVehicleScreen`, `MarkDoneSheet`, `vehicleReport.ts`,
+`householdExport.ts`, and the mock-data seed. Left untouched (correctly
+already using UTC): `redeemedAt`/`updatedAt` audit timestamps in
+`invites.ts`/`registerPushToken.ts`, which are real instants, not
+calendar days — `.toISOString()` is the right call there.
+
 ## Card usage in Vehicle Detail → Overview tab
 
 The brief says not to wrap every section in a card. Kept "At a glance" (the

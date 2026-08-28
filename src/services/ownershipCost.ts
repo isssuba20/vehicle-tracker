@@ -1,5 +1,6 @@
 import { Vehicle } from "@/types/models";
 import { UnifiedExpense } from "./fleetAnalytics";
+import { fromLocalIso } from "@/utils/date";
 
 export interface VehicleOwnershipCost {
   vehicleId: string;
@@ -17,7 +18,7 @@ export interface VehicleOwnershipCost {
 }
 
 function monthsSince(iso: string): number {
-  const purchase = new Date(iso);
+  const purchase = fromLocalIso(iso);
   const now = new Date();
   const months =
     (now.getFullYear() - purchase.getFullYear()) * 12 + (now.getMonth() - purchase.getMonth());

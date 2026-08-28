@@ -1,5 +1,6 @@
 import { Vehicle, ServiceLogEntry, FuelLogEntry, ChargingLogEntry, Urgency } from "@/types/models";
 import { dateUrgency, pmsUrgency, worseOf } from "@/utils/urgency";
+import { toLocalIso } from "@/utils/date";
 
 export type ExpenseCategory = "fuel" | "service" | "charging";
 
@@ -75,7 +76,10 @@ function monthKey(iso: string): string {
 export function getMonthTotal(expenses: UnifiedExpense[], monthOffset = 0): number {
   const d = new Date();
   d.setMonth(d.getMonth() + monthOffset);
-  const key = monthKey(d.toISOString());
+  // toLocalIso(), not toISOString(): the latter converts through UTC, so
+  // for a positive UTC offset (the Philippines is UTC+8) the first ~8
+  // local hours of a new month would compute the previous month's key.
+  const key = monthKey(toLocalIso(d));
   return expenses.filter((e) => monthKey(e.date) === key).reduce((sum, e) => sum + e.cost, 0);
 }
 
@@ -112,7 +116,7 @@ export function getMonthlySpendSeries(expenses: UnifiedExpense[], months = 6): M
     const d = new Date();
     d.setDate(1); // avoid month-length rollover (e.g. Mar 31 - 1mo != Feb)
     d.setMonth(d.getMonth() - i);
-    const key = monthKey(d.toISOString());
+    const key = monthKey(toLocalIso(d));
     series.push({
       monthKey: key,
       monthLabel: d.toLocaleDateString("en-US", { month: "short" }),

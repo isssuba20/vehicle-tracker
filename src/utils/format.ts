@@ -1,3 +1,5 @@
+import { fromLocalIso } from "./date";
+
 /** Formats a number as currency. Intl handles the right symbol/placement per ISO code regardless of locale. */
 export function formatMoney(amount: number, currencyCode: string): string {
   return new Intl.NumberFormat("en-US", {
@@ -23,8 +25,13 @@ export function formatKmPerKwh(value: number | null, implausible = false): strin
   return `${value.toFixed(1)} km/kWh`;
 }
 
+// new Date(iso) on a date-only string parses as UTC midnight, which
+// toLocaleDateString() then renders in the device's local timezone —
+// for a negative UTC offset that can display a day earlier than the
+// date actually stored. fromLocalIso() anchors to local midnight
+// instead, so what's displayed always matches what's stored.
 export function formatDate(iso: string): string {
-  const d = new Date(iso);
+  const d = fromLocalIso(iso);
   return d.toLocaleDateString("en-PH", {
     year: "numeric",
     month: "short",
@@ -33,6 +40,6 @@ export function formatDate(iso: string): string {
 }
 
 export function formatDateShort(iso: string): string {
-  const d = new Date(iso);
+  const d = fromLocalIso(iso);
   return d.toLocaleDateString("en-PH", { month: "short", day: "numeric" });
 }

@@ -21,6 +21,7 @@ import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { useAppStore } from "@/state/store";
 import { useVehicle } from "./VehicleContext";
 import { FuelLogEntry, ServiceLogEntry, ChargingLogEntry } from "@/types/models";
+import { todayIso } from "@/utils/date";
 
 type Kind = "fuel" | "service" | "charging";
 type Entry = FuelLogEntry | ServiceLogEntry | ChargingLogEntry;
@@ -63,7 +64,7 @@ export function QuickAddSheet({
   const styles = makeStyles(colors);
   const isEdit = !!entry;
 
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(todayIso());
   const [odometerKm, setOdometerKm] = useState(String(vehicle.currentOdometerKm));
   const [cost, setCost] = useState("");
   // fuel-only
@@ -95,7 +96,7 @@ export function QuickAddSheet({
         setNotes((entry as ServiceLogEntry).notes ?? "");
       }
     } else if (duplicateFrom) {
-      setDate(new Date().toISOString().slice(0, 10));
+      setDate(todayIso());
       setOdometerKm(String(vehicle.currentOdometerKm));
       setCost(String(duplicateFrom.cost));
       if (kind === "fuel") setLiters(String((duplicateFrom as FuelLogEntry).liters));
@@ -106,7 +107,7 @@ export function QuickAddSheet({
         setNotes("");
       }
     } else {
-      setDate(new Date().toISOString().slice(0, 10));
+      setDate(todayIso());
       setOdometerKm(String(vehicle.currentOdometerKm));
       setCost("");
       setLiters("");

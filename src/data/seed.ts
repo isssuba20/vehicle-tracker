@@ -1,6 +1,7 @@
 import uuid from "react-native-uuid";
 import { Repository } from "@/data/repository";
 import { Vehicle, ServiceLogEntry, FuelLogEntry } from "@/types/models";
+import { toLocalIso } from "@/utils/date";
 
 const CURRENT_USER_ID = "user-1";
 const HOUSEHOLD_GROUP_ID = "group-household";
@@ -8,7 +9,7 @@ const HOUSEHOLD_GROUP_ID = "group-household";
 function isoDaysFromNow(days: number): string {
   const d = new Date();
   d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
+  return toLocalIso(d);
 }
 
 function isoDaysAgo(days: number): string {

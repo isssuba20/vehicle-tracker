@@ -4,6 +4,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { fonts, radii, spacing, ThemeColors } from "@/theme/theme";
 import { useThemeStore } from "@/theme/useThemeStore";
 import { formatDate } from "@/utils/format";
+import { toLocalIso, fromLocalIso } from "@/utils/date";
 
 export function DateField({
   label,
@@ -26,12 +27,12 @@ export function DateField({
       </Pressable>
       {open && (
         <DateTimePicker
-          value={new Date(valueIso)}
+          value={fromLocalIso(valueIso)}
           mode="date"
           display={Platform.OS === "ios" ? "inline" : "default"}
           onChange={(_, date) => {
             setOpen(Platform.OS === "ios");
-            if (date) onChange(date.toISOString().slice(0, 10));
+            if (date) onChange(toLocalIso(date));
           }}
         />
       )}

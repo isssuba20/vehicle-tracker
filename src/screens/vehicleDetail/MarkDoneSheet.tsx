@@ -10,6 +10,7 @@ import { DateField } from "@/components/DateField";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { useAppStore } from "@/state/store";
 import { formatDate } from "@/utils/format";
+import { toLocalIso } from "@/utils/date";
 import { Vehicle } from "@/types/models";
 
 export type RenewalKind = "registration" | "insurance" | "pms";
@@ -17,7 +18,7 @@ export type RenewalKind = "registration" | "insurance" | "pms";
 function isoMonthsFromToday(months: number): string {
   const d = new Date();
   d.setMonth(d.getMonth() + months);
-  return d.toISOString().slice(0, 10);
+  return toLocalIso(d);
 }
 
 const KIND_META: Record<RenewalKind, { title: string; dateLabel: string; defaultMonths: number }> = {
