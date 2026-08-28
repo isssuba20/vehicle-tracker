@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "242889082282",
+    "project_id": "vehicle-tracker-cb6a9",
+    "storage_bucket": "vehicle-tracker-cb6a9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:242889082282:android:07bc11e0489a7f7fbf97d3",
+        "android_client_info": {
+          "package_name": "com.vehicletracker.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDa5bLEYpN0dUBmBuWVt7AVKz9CAZuY8lo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

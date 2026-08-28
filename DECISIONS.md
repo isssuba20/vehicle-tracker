@@ -808,3 +808,37 @@ exact outcome in an `Alert` — permission denied, no project ID,
 Supabase error message, etc. `AppGate.tsx`'s automatic on-launch call
 still fires the same way (return value just unused there); this button
 is for on-demand diagnosis without needing a rebuild or console access.
+
+## Push notifications, part 2: FCM credentials added
+
+The diagnostic from the previous entry did its job — it surfaced
+"Default FirebaseApp is not initialized... FirebaseApp.initializeApp(Context)
+first," which is exactly the error Expo's push docs describe when an
+Android app has no Firebase/FCM configuration at all. Root cause: this
+project never had a Firebase project or `google-services.json` — the
+`expo-notifications` plugin was already in `app.json`, but that alone
+isn't enough for Android; FCM specifically needs its own config file.
+
+Fixed the config-file half: user created a Firebase project (package
+name `com.vehicletracker.app`, matching exactly), downloaded
+`google-services.json`, and it's now committed at the repo root with
+`android.googleServicesFile: "./google-services.json"` added to
+`app.json`. Committed deliberately, not gitignored — this file is a
+client config analogous to the Supabase anon key already committed in
+this project (see the "Backend: Supabase" entry above): it's scoped to
+this specific Android package and restricted by Firebase's own rules,
+not a secret that needs hiding. The actual secret — the Firebase
+service-account key used for sending pushes via FCM V1 — is never
+committed; it goes straight into `eas credentials`, outside this repo.
+
+**Still needed, outside what committing this file can do**:
+1. Upload the Firebase service-account key to EAS (`eas credentials`
+   → Android → "Push Notifications: Manage your FCM V1 credentials").
+2. A fresh native build (`eas build --platform android`) —
+   `google-services.json` is baked into the native binary at build
+   time, so this change cannot ship via OTA like the rest of this
+   session's work.
+
+No RN app code changed — config-only. `npx tsc --noEmit` and
+`npx expo export` both still clean (the file only matters at native
+build time, not to the JS bundle).
