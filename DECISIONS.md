@@ -789,3 +789,22 @@ bordered card, since it's a genuinely distinct grouping of headline
 numbers. Flattened "Renewals & Maintenance," "Details," and "EV details"
 to plain sections with a hairline top divider instead of a full
 card/border — they're closer to a continuous list than a separate module.
+
+## Push notification registration: silent failure made debuggable
+
+While debugging why a real device's `push_tokens` row never appeared
+after force-stop/reopen, found the real root cause wasn't reproducible
+from here: `registerPushToken()` returned `void` on every early-out
+(no Supabase, not a real device, permission denied, no EAS project ID)
+**and** on any thrown error (native module issue, network failure,
+Supabase upsert error) — all four indistinguishable from "worked, just
+nothing to do." With no adb/device-log access to the user's phone,
+this was undiagnosable from either side.
+
+Changed it to return a `PushRegistrationResult` union instead, and
+added a "Notifications" section in Settings with a "Check push
+notification status" button that calls it on demand and shows the
+exact outcome in an `Alert` — permission denied, no project ID,
+Supabase error message, etc. `AppGate.tsx`'s automatic on-launch call
+still fires the same way (return value just unused there); this button
+is for on-demand diagnosis without needing a rebuild or console access.

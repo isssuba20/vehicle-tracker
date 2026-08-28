@@ -18,6 +18,7 @@ import {
 import { TextField } from "@/components/TextField";
 import { CurrencyPickerField } from "@/components/CurrencyPickerField";
 import { buildHouseholdExportCsv } from "@/services/householdExport";
+import { registerPushToken, PushRegistrationResult } from "@/notifications/registerPushToken";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { TabScreenProps } from "@/navigation/types";
 
@@ -25,6 +26,23 @@ import { TabScreenProps } from "@/navigation/types";
 // in both themes), so its text needs a fixed bright color rather than
 // colors.textPrimary, which flips to near-black in light mode.
 const ON_OK_TEXT = "#F3EFE7";
+
+function describePushResult(result: PushRegistrationResult): string {
+  switch (result.status) {
+    case "registered":
+      return "Registered — this device will get daily renewal reminders.";
+    case "no-backend":
+      return "No Supabase backend is configured for this build.";
+    case "not-a-device":
+      return "Push notifications only work on a real device, not a simulator/emulator.";
+    case "permission-denied":
+      return "Notification permission is off. Enable it in your phone's Settings → Apps → Garahe → Notifications, then try again.";
+    case "no-project-id":
+      return "This build is missing its EAS project ID — push tokens can't be requested. Needs a fresh build.";
+    case "error":
+      return `Registration failed: ${result.message}`;
+  }
+}
 
 function buildInfoLabel(): string {
   if (!Updates.isEnabled) return "Dev build (no OTA updates)";
@@ -70,6 +88,7 @@ export function SettingsScreen({ navigation }: TabScreenProps<"Settings">) {
   const [kmInput, setKmInput] = useState(String(dueSoonKm));
   const [savingReminders, setSavingReminders] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [checkingPush, setCheckingPush] = useState(false);
 
   async function handleSaveBudget() {
     if (!groupId || savingBudget) return;
@@ -122,6 +141,17 @@ export function SettingsScreen({ navigation }: TabScreenProps<"Settings">) {
       Alert.alert("Export failed", err instanceof Error ? err.message : "Unknown error");
     } finally {
       setExporting(false);
+    }
+  }
+
+  async function handleCheckPush() {
+    if (checkingPush) return;
+    setCheckingPush(true);
+    try {
+      const result = await registerPushToken(currentUserId);
+      Alert.alert("Push notifications", describePushResult(result));
+    } finally {
+      setCheckingPush(false);
     }
   }
 
@@ -244,6 +274,21 @@ export function SettingsScreen({ navigation }: TabScreenProps<"Settings">) {
           30-day / 500 km window.
         </Text>
       </View>
+
+      {isSupabaseConfigured && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Notifications</Text>
+          <Text style={styles.sectionBody}>
+            Registers this device for the daily overdue/due-soon renewal reminder. If reminders aren't
+            arriving, tap this to see exactly why.
+          </Text>
+          <Pressable style={styles.inviteButton} onPress={handleCheckPush} disabled={checkingPush}>
+            <Text style={styles.inviteButtonText}>
+              {checkingPush ? "Checking…" : "Check push notification status"}
+            </Text>
+          </Pressable>
+        </View>
+      )}
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Household budget</Text>
