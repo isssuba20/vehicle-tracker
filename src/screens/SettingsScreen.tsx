@@ -45,11 +45,16 @@ function describePushResult(result: PushRegistrationResult): string {
 }
 
 function buildInfoLabel(): string {
-  if (!Updates.isEnabled) return "Dev build (no OTA updates)";
-  if (Updates.isEmbeddedLaunch) return "Running the version built into this install";
+  // Updates.channel identifies which eas.json build profile produced this
+  // install (each profile maps to its own channel — development/preview/
+  // production) — shown so it's obvious which profile to reuse for the
+  // next build instead of guessing.
+  const channel = Updates.channel ? ` · channel: ${Updates.channel}` : "";
+  if (!Updates.isEnabled) return `Dev build (no OTA updates)${channel}`;
+  if (Updates.isEmbeddedLaunch) return `Running the version built into this install${channel}`;
   const shortId = Updates.updateId ? Updates.updateId.slice(0, 8) : "unknown";
   const when = Updates.createdAt ? Updates.createdAt.toLocaleString() : "unknown time";
-  return `Update ${shortId} · published ${when}`;
+  return `Update ${shortId} · published ${when}${channel}`;
 }
 
 export function SettingsScreen({ navigation }: TabScreenProps<"Settings">) {
