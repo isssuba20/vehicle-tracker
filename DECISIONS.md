@@ -762,6 +762,25 @@ already using UTC): `redeemedAt`/`updatedAt` audit timestamps in
 `invites.ts`/`registerPushToken.ts`, which are real instants, not
 calendar days — `.toISOString()` is the right call there.
 
+**Follow-up**: `supabase/functions/daily-reminders/index.ts` had the
+identical bug in its own `dateUrgency()` — it's a separate Deno Edge
+Function, excluded from the RN app's `tsconfig.json`
+(`"exclude": ["supabase/functions"]`), so it wasn't touched by the
+sweep above and isn't covered by the `tsc`/`expo export` verification
+this session otherwise relies on. Fixed separately: since this runs on
+Supabase's server (a real UTC clock) rather than a household's device,
+there's no per-user timezone to read, so it now assumes this app's
+stated primary market, Asia/Manila (UTC+8, no DST) — shifts the
+server's UTC "now" by that fixed offset before truncating to a
+calendar day, then diffs against the stored date (itself anchored at
+UTC midnight, which is exact for a bare `date` column with no
+time-of-day to shift). Verified the day-math directly with a
+standalone Node script (same logic, no Deno-specific APIs) covering
+the mid-afternoon-Manila and early-morning-Manila cases that were
+broken before. Needs a manual redeploy to take effect — the fix ships
+with this commit but Edge Functions don't auto-deploy like the OTA
+app bundle does.
+
 ## Card usage in Vehicle Detail → Overview tab
 
 The brief says not to wrap every section in a card. Kept "At a glance" (the

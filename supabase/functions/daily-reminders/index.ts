@@ -16,10 +16,31 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const DUE_SOON_DAYS = 30;
 const DUE_SOON_KM = 500;
 
+// This function runs on Supabase's servers (real UTC clock), not on a
+// household's device — there's no per-household timezone stored to do
+// this precisely, so it assumes this app's stated primary market,
+// Asia/Manila (UTC+8, no DST). Comparing raw UTC instants without this
+// adjustment reproduced the exact bug fixed client-side in
+// src/utils/urgency.ts: a renewal due "today" would read as overdue
+// hours before the Manila-local day actually ended, and the day
+// boundary would land at 8am/4pm Manila time instead of midnight.
+const ASSUMED_UTC_OFFSET_HOURS = 8;
+
 type Urgency = "ok" | "due_soon" | "overdue";
 
+/** UTC midnight of the calendar day this UTC instant falls on in the assumed local timezone. */
+function localMidnightUtc(instant: Date, offsetHours: number): Date {
+  const shifted = new Date(instant.getTime() + offsetHours * 60 * 60 * 1000);
+  return new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate()));
+}
+
 function dateUrgency(expiryIso: string, now: Date): Urgency {
-  const diffDays = (new Date(expiryIso).getTime() - now.getTime()) / DAY_MS;
+  // expiryIso is a Postgres `date` column ("YYYY-MM-DD"), carrying no
+  // timezone of its own — anchoring it at UTC midnight is exact, not an
+  // assumption, since a bare calendar date has no time-of-day to shift.
+  const expiry = new Date(`${expiryIso}T00:00:00Z`);
+  const today = localMidnightUtc(now, ASSUMED_UTC_OFFSET_HOURS);
+  const diffDays = Math.round((expiry.getTime() - today.getTime()) / DAY_MS);
   if (diffDays < 0) return "overdue";
   if (diffDays <= DUE_SOON_DAYS) return "due_soon";
   return "ok";
