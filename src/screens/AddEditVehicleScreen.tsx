@@ -81,13 +81,45 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
       return;
     }
     const yearNum = Number(year);
-    if (!year || Number.isNaN(yearNum)) {
+    if (!year || Number.isNaN(yearNum) || yearNum < 1900 || yearNum > new Date().getFullYear() + 1) {
       setError("Enter a valid year.");
       return;
     }
-    const priceNum = Number(purchasePrice) || 0;
-    const odoNum = Number(currentOdometerKm) || 0;
-    const pmsKmNum = nextPmsDueKm ? Number(nextPmsDueKm) : undefined;
+
+    const priceNum = purchasePrice.trim() ? Number(purchasePrice) : 0;
+    if (Number.isNaN(priceNum) || priceNum < 0) {
+      setError("Purchase price can't be negative.");
+      return;
+    }
+    const odoNum = currentOdometerKm.trim() ? Number(currentOdometerKm) : 0;
+    if (Number.isNaN(odoNum) || odoNum < 0) {
+      setError("Odometer reading can't be negative.");
+      return;
+    }
+    let pmsKmNum: number | undefined;
+    if (nextPmsDueKm.trim()) {
+      pmsKmNum = Number(nextPmsDueKm);
+      if (Number.isNaN(pmsKmNum) || pmsKmNum < 0) {
+        setError("Next PMS due (km) can't be negative.");
+        return;
+      }
+    }
+    let batteryCapacityNum: number | undefined;
+    if (showEvDetails && batteryCapacityKwh.trim()) {
+      batteryCapacityNum = Number(batteryCapacityKwh);
+      if (Number.isNaN(batteryCapacityNum) || batteryCapacityNum < 0) {
+        setError("Battery capacity can't be negative.");
+        return;
+      }
+    }
+    let estimatedRangeNum: number | undefined;
+    if (showEvDetails && estimatedRangeKm.trim()) {
+      estimatedRangeNum = Number(estimatedRangeKm);
+      if (Number.isNaN(estimatedRangeNum) || estimatedRangeNum < 0) {
+        setError("Estimated range can't be negative.");
+        return;
+      }
+    }
 
     const vehicle: Vehicle = {
       id: existing?.id ?? (uuid.v4() as string),
@@ -108,8 +140,8 @@ export function AddEditVehicleScreen({ route, navigation }: Props) {
       insuranceExpiry,
       nextPmsDueDate,
       nextPmsDueKm: pmsKmNum,
-      batteryCapacityKwh: showEvDetails && batteryCapacityKwh ? Number(batteryCapacityKwh) : undefined,
-      estimatedRangeKm: showEvDetails && estimatedRangeKm ? Number(estimatedRangeKm) : undefined,
+      batteryCapacityKwh: batteryCapacityNum,
+      estimatedRangeKm: estimatedRangeNum,
       chargingPortType: showEvDetails ? chargingPortType.trim() || undefined : undefined,
       homeChargingNotes: showEvDetails ? homeChargingNotes.trim() || undefined : undefined,
       primaryDriverUserId: primaryDriverUserId || undefined,

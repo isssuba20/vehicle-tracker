@@ -47,6 +47,7 @@ export function MarkDoneSheet({
 
   const [date, setDate] = useState(isoMonthsFromToday(meta.defaultMonths));
   const [dueKm, setDueKm] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [completed, setCompleted] = useState(false);
   const checkAnim = useRef(new Animated.Value(0)).current;
@@ -55,12 +56,24 @@ export function MarkDoneSheet({
     if (!visible) return;
     setDate(isoMonthsFromToday(meta.defaultMonths));
     setDueKm(kind === "pms" ? String(vehicle.currentOdometerKm + 5000) : "");
+    setError(null);
     setCompleted(false);
     checkAnim.setValue(0);
   }, [visible, kind]);
 
   async function handleSave() {
     if (submitting) return;
+    setError(null);
+
+    let kmNum: number | undefined;
+    if (kind === "pms" && dueKm.trim()) {
+      kmNum = Number(dueKm);
+      if (Number.isNaN(kmNum) || kmNum < 0) {
+        setError("Enter a valid km reading, or leave it blank.");
+        return;
+      }
+    }
+
     setSubmitting(true);
     try {
       if (kind === "registration") {
@@ -68,11 +81,10 @@ export function MarkDoneSheet({
       } else if (kind === "insurance") {
         await updateVehicle({ ...vehicle, insuranceExpiry: date });
       } else {
-        const kmNum = dueKm.trim() ? Number(dueKm) : undefined;
         await updateVehicle({
           ...vehicle,
           nextPmsDueDate: date,
-          nextPmsDueKm: kmNum != null && !Number.isNaN(kmNum) ? kmNum : undefined,
+          nextPmsDueKm: kmNum,
         });
       }
       setCompleted(true);
@@ -127,6 +139,8 @@ export function MarkDoneSheet({
                 />
               )}
 
+              {error && <Text style={styles.error}>{error}</Text>}
+
               <View style={styles.actions}>
                 <Pressable style={[styles.button, styles.cancelButton]} onPress={onClose}>
                   <Text style={styles.cancelText}>Cancel</Text>
@@ -177,6 +191,12 @@ const makeStyles = (colors: ThemeColors) =>
       fontSize: 20,
       color: colors.textPrimary,
       marginBottom: spacing.md,
+    },
+    error: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.overdueBright,
+      marginBottom: spacing.sm,
     },
     actions: {
       flexDirection: "row",

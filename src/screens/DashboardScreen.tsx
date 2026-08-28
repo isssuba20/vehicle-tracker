@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { TabScreenProps } from "@/navigation/types";
@@ -124,6 +124,7 @@ export function DashboardScreen({ navigation }: Props) {
   if (!ready) {
     return (
       <View style={styles.center}>
+        <ActivityIndicator color={colors.accent} />
         <Text style={styles.loadingText}>Loading your garage…</Text>
       </View>
     );
@@ -215,6 +216,7 @@ const makeStyles = (colors: ThemeColors) =>
     loadingText: {
       fontFamily: fonts.body,
       color: colors.textMuted,
+      marginTop: spacing.sm,
     },
     topBar: {
       flexDirection: "row",

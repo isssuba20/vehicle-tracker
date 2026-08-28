@@ -653,6 +653,38 @@ new record.
 
 No schema changes across any of these six.
 
+## Bug: negative numbers silently accepted on Add/Edit Vehicle and Mark Done
+
+Found while auditing numeric input handling for validation gaps.
+`AddEditVehicleScreen.handleSave()` computed `purchasePrice`/
+`currentOdometerKm` as `Number(input) || 0` — this guards against
+empty/non-numeric input (`Number("")` is `0`, falsy) but a **negative**
+number like `-5000` is truthy, so it sailed straight through
+unvalidated into the saved vehicle. Same gap on `nextPmsDueKm`,
+`batteryCapacityKwh`, and `estimatedRangeKm`. `MarkDoneSheet`'s PMS
+"next due at (km)" field had the identical bug — only checked
+`Number.isNaN`, not sign. A negative purchase price or odometer would
+have quietly corrupted every cost-per-km/ownership-cost calculation
+downstream (all of which assume non-negative inputs) with no error
+shown to the user.
+
+Fixed by validating sign explicitly wherever a number is parsed from
+one of these fields, with a specific error message per field (e.g.
+"Purchase price can't be negative.") rather than one generic message —
+also tightened the vehicle year check to a plausible range (1900 to
+next year) instead of "any non-NaN number," so e.g. "0" or "30000"
+can't be saved as a model year. `MarkDoneSheet` gained an `error` state
+and inline error text (it previously had none at all — an invalid
+value there was dropped silently rather than shown).
+
+## Loading-state consistency: Dashboard now shows a spinner, not just text
+
+Dashboard's initial loading state was text-only ("Loading your
+garage…"), while Vehicle Detail's equivalent state uses a spinner.
+Added the same `ActivityIndicator` to Dashboard's loading view so
+"the app is doing something" reads the same way everywhere rather than
+looking stalled on a plain sentence for a moment.
+
 ## Card usage in Vehicle Detail → Overview tab
 
 The brief says not to wrap every section in a card. Kept "At a glance" (the
