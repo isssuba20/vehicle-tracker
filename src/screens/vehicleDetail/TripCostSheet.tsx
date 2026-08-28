@@ -31,7 +31,10 @@ export function TripCostSheet({
   const [extras, setExtras] = useState("");
 
   const distanceKm = Number(distance) || 0;
-  const extraCosts = Number(extras) || 0;
+  // Clamped, not just parsed: a negative value here would otherwise
+  // silently discount the total below (the "Tolls / parking" row hides
+  // for non-positive values, but the total would still reflect it).
+  const extraCosts = Math.max(0, Number(extras) || 0);
 
   const result = useMemo(
     () => computeTripCost(vehicle, fuelEntries, chargingEntries, distanceKm, extraCosts),

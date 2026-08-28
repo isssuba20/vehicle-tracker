@@ -685,6 +685,31 @@ Added the same `ActivityIndicator` to Dashboard's loading view so
 "the app is doing something" reads the same way everywhere rather than
 looking stalled on a plain sentence for a moment.
 
+## Audit: every numeric input and division site, one more gap found
+
+After the Add/Edit Vehicle and Mark Done negative-number fixes, swept
+every remaining `Number(...)` conversion and every division in
+`services/`/`utils/` for the same class of bug (unvalidated sign,
+divide-by-zero).
+
+Found one more: `TripCostSheet`'s "tolls/parking/other" field computed
+`extraCosts = Number(extras) || 0` with no sign check. Distance was
+already effectively safe (`distanceKm <= 0` already gates the whole
+result to a hint instead of computing), but a negative extras value
+would silently *reduce* the displayed total — with the "Tolls /
+parking" row itself hidden (it only renders `extraCosts > 0`), so the
+discount would have no visible explanation. Fixed with
+`Math.max(0, Number(extras) || 0)`.
+
+Everything else checked out already guarded: `QuickAddSheet` (cost/
+odometer/liters/kWh all validated), `ownershipCost.monthsSince()`
+(`Math.max(1, months)`, so cost-per-month can't divide by zero for a
+same-day purchase), `maintenancePrediction` (requires >= 2 real
+intervals before averaging), `serviceCenters` (a shop group is only
+ever created alongside its first entry, so `entries.length` is never
+0), `fleetAnalytics.getSpendingTrend` (returns `null` rather than
+dividing by a zero last-month total). No further changes needed there.
+
 ## Card usage in Vehicle Detail → Overview tab
 
 The brief says not to wrap every section in a card. Kept "At a glance" (the
